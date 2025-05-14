@@ -3,43 +3,65 @@
 import MainLayout from '@/components/layout/MainLayout';
 import { del, fetcher, post, put } from '@/util/api';
 import { notifyError } from '@/util/toast-util';
-import { Button, LoadingOverlay, Modal, TextInput } from '@mantine/core';
+import { LoadingOverlay, Text, TextInput } from '@mantine/core';
+import { modals } from '@mantine/modals';
+import { Check, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 export default function LocationPage() {
     const { data: provinces, error: provincesError, isLoading: provincesLoading } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
     const { data: wards, error: wardsError, isLoading: wardsLoading } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
-    const [showAddProvince, setShowAddProvince] = useState(false);
-    const [showAddWard, setShowAddWard] = useState(false);
-    const [provinceName, setProvinceName] = useState('');
-    const [wardName, setWardName] = useState('');
-    const [editProvince, setEditProvince] = useState<{ provinceId: number; provinceName: string } | null>(null);
-    const [editWard, setEditWard] = useState<{ wardId: number; wardName: string } | null>(null);
+
+    // State for inline editing
+    const [isAddingProvince, setIsAddingProvince] = useState(false);
+    const [isAddingWard, setIsAddingWard] = useState(false);
+    const [newProvinceName, setNewProvinceName] = useState('');
+    const [newWardName, setNewWardName] = useState('');
+
+    // State for editing existing items
+    const [editingProvinceId, setEditingProvinceId] = useState<number | null>(null);
+    const [editingWardId, setEditingWardId] = useState<number | null>(null);
+    const [editProvinceName, setEditProvinceName] = useState('');
+    const [editWardName, setEditWardName] = useState('');
 
     const handleAddProvince = async () => {
-        if (!provinceName.trim()) return;
+        if (!newProvinceName.trim()) return;
         try {
-            await post('/api/provinces', JSON.stringify({ name: provinceName }))
+            await post('/api/provinces', JSON.stringify({ name: newProvinceName }))
             mutate('/api/provinces');
-            setProvinceName('');
-            setShowAddProvince(false);
+            setNewProvinceName('');
+            setIsAddingProvince(false);
         } catch (error) {
             notifyError('Failed to add province');
         }
     };
 
-    const handleEditProvince = async () => {
+    const handleEditProvince = async (id: number) => {
         try {
-            await put(`/api/provinces/${editProvince?.provinceId}`, JSON.stringify({ name: provinceName }));
+            await put(`/api/provinces/${id}`, JSON.stringify({ name: editProvinceName }));
             mutate('/api/provinces');
-            setEditProvince(null);
-            setProvinceName('');
-            setShowAddProvince(false);
+            setEditingProvinceId(null);
+            setEditProvinceName('');
         } catch (error) {
             notifyError('Failed to edit province');
         }
     };
+
+    const handleAskDeleteProvince = (provinceName: string, id: number) => {
+        modals.openConfirmModal({
+            title: 'Warning',
+            centered: true,
+            children: (
+                <Text size='sm'>
+                    Are you sure you want to delete "{provinceName}"?
+                </Text>
+            ),
+            labels: { confirm: `Delete "${provinceName}"`, cancel: "No don't delete it" },
+            confirmProps: { color: 'red' },
+            onConfirm: () => handleDeleteProvince(id),
+        });
+    }
 
     const handleDeleteProvince = async (id: number) => {
         try {
@@ -51,32 +73,42 @@ export default function LocationPage() {
     };
 
     const handleAddWard = async () => {
-        if (!wardName.trim()) return;
+        if (!newWardName.trim()) return;
         try {
-            await post('/api/wards', JSON.stringify({ name: wardName }))
+            await post('/api/wards', JSON.stringify({ name: newWardName }))
             mutate('/api/wards');
-            setWardName('');
-            setShowAddWard(false);
+            setNewWardName('');
+            setIsAddingWard(false);
         } catch (error) {
             notifyError('Failed to add ward');
         }
     };
 
-    const handleEditWard = async () => {
+    const handleEditWard = async (id: number) => {
         try {
-            await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/wards/${editWard?.wardId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ wardName: wardName })
-            });
+            await put(`/api/wards/${id}`, JSON.stringify({ wardName: editWardName }));
             mutate('/api/wards');
-            setEditWard(null);
-            setWardName('');
-            setShowAddWard(false);
+            setEditingWardId(null);
+            setEditWardName('');
         } catch (error) {
             notifyError('Failed to edit ward');
         }
     };
+
+    const handleAskDeleteWard = (wardName: string, id: number) => {
+        modals.openConfirmModal({
+            title: 'Warning',
+            centered: true,
+            children: (
+                <Text size='sm'>
+                    Are you sure you want to delete "{wardName}"?
+                </Text>
+            ),
+            labels: { confirm: `Delete "${wardName}"`, cancel: "No don't delete it" },
+            confirmProps: { color: 'red' },
+            onConfirm: () => handleDeleteWard(id),
+        });
+    }
 
     const handleDeleteWard = async (id: number) => {
         try {
@@ -85,6 +117,16 @@ export default function LocationPage() {
         } catch (error) {
             notifyError('Failed to delete ward');
         }
+    };
+
+    const startEditingProvince = (province: { provinceId: number; provinceName: string }) => {
+        setEditingProvinceId(province.provinceId);
+        setEditProvinceName(province.provinceName);
+    };
+
+    const startEditingWard = (ward: { wardId: number; wardName: string }) => {
+        setEditingWardId(ward.wardId);
+        setEditWardName(ward.wardName);
     };
 
     return (
@@ -101,13 +143,12 @@ export default function LocationPage() {
                     <div className="flex items-center justify-between px-6 pt-6 pb-2">
                         <h2 className="text-lg font-semibold">Provinces</h2>
                         <button
-                            onClick={() => { setShowAddProvince(true); setEditProvince(null); setProvinceName(''); }}
+                            onClick={() => setIsAddingProvince(true)}
                             className="p-2 hover:text-gray-800 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
                             title="Add Province"
+                            disabled={isAddingProvince}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 5v14M5 12h14" />
-                            </svg>
+                            <Plus size={20} />
                         </button>
                     </div>
                     {provincesError ? (
@@ -117,23 +158,95 @@ export default function LocationPage() {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
                                 {provinces?.map((province) => (
                                     <tr key={province.provinceId} className="hover:bg-gray-50 group">
-                                        <td className="px-6 py-3 text-sm text-gray-900">{province.provinceName}</td>
+                                        <td className="px-6 py-3 text-sm text-gray-900">
+                                            {editingProvinceId === province.provinceId ? (
+                                                <TextInput
+                                                    value={editProvinceName}
+                                                    onChange={(e) => setEditProvinceName(e.currentTarget.value)}
+                                                    autoFocus
+                                                />
+                                            ) : (
+                                                province.provinceName
+                                            )}
+                                        </td>
                                         <td className="px-6 py-3 flex gap-2 justify-end">
-                                            <button className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300" onClick={() => { setEditProvince(province); setProvinceName(province.provinceName); setShowAddProvince(true); }} title="Edit">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
-                                            </button>
-                                            <button className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300" onClick={() => handleDeleteProvince(province.provinceId)} title="Delete">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                            </button>
+                                            {editingProvinceId === province.provinceId ? (
+                                                <>
+                                                    <button
+                                                        className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
+                                                        onClick={() => handleEditProvince(province.provinceId)}
+                                                        title="Save"
+                                                    >
+                                                        <Check size={16} />
+                                                    </button>
+                                                    <button
+                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
+                                                        onClick={() => {
+                                                            setEditingProvinceId(null);
+                                                            setEditProvinceName('');
+                                                        }}
+                                                        title="Cancel"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300"
+                                                        onClick={() => startEditingProvince(province)}
+                                                        title="Edit"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
+                                                    </button>
+                                                    <button
+                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300"
+                                                        onClick={() => handleAskDeleteProvince(province.provinceName, province.provinceId)}
+                                                        title="Delete"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                                                    </button>
+                                                </>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
+                                {isAddingProvince && (
+                                    <tr className="bg-blue-50">
+                                        <td className="px-6 py-3">
+                                            <TextInput
+                                                value={newProvinceName}
+                                                onChange={(e) => setNewProvinceName(e.currentTarget.value)}
+                                                placeholder="Enter province name"
+                                                autoFocus
+                                            />
+                                        </td>
+                                        <td className="px-6 py-3 flex gap-2 justify-end">
+                                            <button
+                                                className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
+                                                onClick={handleAddProvince}
+                                                title="Save"
+                                            >
+                                                <Check size={16} />
+                                            </button>
+                                            <button
+                                                className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
+                                                onClick={() => {
+                                                    setIsAddingProvince(false);
+                                                    setNewProvinceName('');
+                                                }}
+                                                title="Cancel"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     )}
@@ -145,13 +258,12 @@ export default function LocationPage() {
                     <div className="flex items-center justify-between px-6 pt-6 pb-2">
                         <h2 className="text-lg font-semibold">Wards</h2>
                         <button
-                            onClick={() => { setShowAddWard(true); setEditWard(null); setWardName(''); }}
+                            onClick={() => setIsAddingWard(true)}
                             className="p-2 hover:text-gray-800 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
                             title="Add Ward"
+                            disabled={isAddingWard}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 5v14M5 12h14" />
-                            </svg>
+                            <Plus size={20} />
                         </button>
                     </div>
                     {wardsError ? (
@@ -161,63 +273,100 @@ export default function LocationPage() {
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
                                 {wards?.map((ward) => (
                                     <tr key={ward.wardId} className="hover:bg-gray-50 group">
-                                        <td className="px-6 py-3 text-sm text-gray-900">{ward.wardName}</td>
+                                        <td className="px-6 py-3 text-sm text-gray-900">
+                                            {editingWardId === ward.wardId ? (
+                                                <TextInput
+                                                    value={editWardName}
+                                                    onChange={(e) => setEditWardName(e.currentTarget.value)}
+                                                    autoFocus
+                                                />
+                                            ) : (
+                                                ward.wardName
+                                            )}
+                                        </td>
                                         <td className="px-6 py-3 flex gap-2 justify-end">
-                                            <button className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300" onClick={() => { setEditWard(ward); setWardName(ward.wardName); setShowAddWard(true); }} title="Edit">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
-                                            </button>
-                                            <button className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300" onClick={() => handleDeleteWard(ward.wardId)} title="Delete">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                            </button>
+                                            {editingWardId === ward.wardId ? (
+                                                <>
+                                                    <button
+                                                        className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
+                                                        onClick={() => handleEditWard(ward.wardId)}
+                                                        title="Save"
+                                                    >
+                                                        <Check size={16} />
+                                                    </button>
+                                                    <button
+                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
+                                                        onClick={() => {
+                                                            setEditingWardId(null);
+                                                            setEditWardName('');
+                                                        }}
+                                                        title="Cancel"
+                                                    >
+                                                        <X size={16} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button
+                                                        className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300"
+                                                        onClick={() => startEditingWard(ward)}
+                                                        title="Edit"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
+                                                    </button>
+                                                    <button
+                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300"
+                                                        onClick={() => handleAskDeleteWard(ward.wardName, ward.wardId)}
+                                                        title="Delete"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                                                    </button>
+                                                </>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}
+                                {isAddingWard && (
+                                    <tr className="bg-blue-50">
+                                        <td className="px-6 py-3">
+                                            <TextInput
+                                                value={newWardName}
+                                                onChange={(e) => setNewWardName(e.currentTarget.value)}
+                                                placeholder="Enter ward name"
+                                                autoFocus
+                                            />
+                                        </td>
+                                        <td className="px-6 py-3 flex gap-2 justify-end">
+                                            <button
+                                                className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
+                                                onClick={handleAddWard}
+                                                title="Save"
+                                            >
+                                                <Check size={16} />
+                                            </button>
+                                            <button
+                                                className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
+                                                onClick={() => {
+                                                    setIsAddingWard(false);
+                                                    setNewWardName('');
+                                                }}
+                                                title="Cancel"
+                                            >
+                                                <X size={16} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     )}
                 </div>
             </div>
-
-            {/* Province Modal */}
-            <Modal opened={showAddProvince} onClose={() => { setShowAddProvince(false); setEditProvince(null); setProvinceName(''); }}
-                title={editProvince ? `Edit "${editProvince.provinceName}"` : 'Add Province'} centered>
-                <form onSubmit={e => { e.preventDefault(); editProvince ? handleEditProvince() : handleAddProvince(); }} className="space-y-4 px-2">
-                    <TextInput
-                        label="Province Name"
-                        value={provinceName}
-                        onChange={e => setProvinceName(e.currentTarget.value)}
-                        required
-                        autoFocus
-                    />
-                    <div className="flex justify-end gap-3 mt-6">
-                        <Button variant="outline" onClick={() => { setShowAddProvince(false); setEditProvince(null); setProvinceName(''); }}>Cancel</Button>
-                        <Button type="submit">{editProvince ? 'Update' : 'Add'}</Button>
-                    </div>
-                </form>
-            </Modal>
-
-            {/* Ward Modal */}
-            <Modal opened={showAddWard} onClose={() => { setShowAddWard(false); setEditWard(null); setWardName(''); }} title={editWard ? `Edit "${editWard.wardName}"` : 'Add Ward'} centered>
-                <form onSubmit={e => { e.preventDefault(); editWard ? handleEditWard() : handleAddWard(); }} className="space-y-4 px-2">
-                    <TextInput
-                        label="Ward Name"
-                        value={wardName}
-                        onChange={e => setWardName(e.currentTarget.value)}
-                        required
-                        autoFocus
-                    />
-                    <div className="flex justify-end gap-3 mt-6">
-                        <Button variant="outline" onClick={() => { setShowAddWard(false); setEditWard(null); setWardName(''); }}>Cancel</Button>
-                        <Button type="submit">{editWard ? 'Update' : 'Add'}</Button>
-                    </div>
-                </form>
-            </Modal>
         </MainLayout>
     );
 }

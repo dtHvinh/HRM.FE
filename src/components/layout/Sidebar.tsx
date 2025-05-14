@@ -56,16 +56,6 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
             label: 'Departments',
         },
         {
-            href: '/location',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="10" r="3" />
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
-                </svg>
-            ),
-            label: 'Location',
-        },
-        {
             href: '/notifications',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -74,6 +64,28 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                 </svg>
             ),
             label: 'Notifications',
+        },
+        {
+            href: '/accounts',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 7h-9" />
+                    <path d="M14 17H5" />
+                    <circle cx="17" cy="17" r="3" />
+                    <circle cx="7" cy="7" r="3" />
+                </svg>
+            ),
+            label: 'Accounts',
+        },
+        {
+            href: '/location',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                </svg>
+            ),
+            label: 'Location',
         },
     ];
 
@@ -90,7 +102,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                 </svg>
                 <h1 className="text-xl font-bold">HRM System</h1>
             </div>
-            <nav className="space-y-1 text-black">
+            <nav className="space-y-1 text-black [&>*:nth-child(3)]:border-t-[1px] [&>*:nth-child(3)]:rounded-t-none">
                 {navItems.map((item) => (
                     <NavItem
                         key={item.href}

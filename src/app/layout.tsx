@@ -2,6 +2,7 @@ import { AuthContextProvider } from "@/context/AuthProvider";
 import { MantineProvider } from "@mantine/core";
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
+import { ModalsProvider } from "@mantine/modals";
 import type { Metadata } from "next";
 import { DM_Sans, Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
@@ -37,8 +38,10 @@ export default function RootLayout({
       >
         <AuthContextProvider>
           <MantineProvider>
-            <Toaster />
-            {children}
+            <ModalsProvider>
+              <Toaster />
+              {children}
+            </ModalsProvider>
           </MantineProvider>
         </AuthContextProvider>
       </body>

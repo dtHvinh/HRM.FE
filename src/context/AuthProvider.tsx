@@ -1,6 +1,6 @@
 'use client'
 
-import { getCookie, setCookie } from "cookies-next/client";
+import { deleteCookie, getCookie, setCookie } from "cookies-next/client";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useEffect, useState } from "react";
 
@@ -15,6 +15,10 @@ export const getAuth = () => {
 
 export const setAuth = (accessToken: string) => {
     setCookie('accessToken', accessToken);
+}
+
+export const clearAuth = () => {
+    deleteCookie('accessToken');
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -80,7 +80,7 @@ export default function EmployeesPage() {
     const employees = employeesData;
 
     return (
-        <MainLayout activePath="/employees">
+        <MainLayout activePath="/">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Employees</h1>
