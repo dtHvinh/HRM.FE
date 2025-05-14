@@ -98,7 +98,7 @@ export default function DepartmentDetailPage({ params }: { params: { id: string 
 
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-lg font-semibold">Team Members</h2>
+                    <h2 className="text-lg font-semibold">Members</h2>
                     <span className="text-sm text-gray-600">{department.employeeCount} total</span>
                 </div>
                 <div className="space-y-4">

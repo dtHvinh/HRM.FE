@@ -35,18 +35,6 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
             href: '/',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect width="7" height="9" x="3" y="3" rx="1" />
-                    <rect width="7" height="5" x="14" y="3" rx="1" />
-                    <rect width="7" height="9" x="14" y="12" rx="1" />
-                    <rect width="7" height="5" x="3" y="16" rx="1" />
-                </svg>
-            ),
-            label: 'Dashboard',
-        },
-        {
-            href: '/employees',
-            icon: (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                     <circle cx="9" cy="7" r="4" />
                     <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -66,6 +54,16 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                 </svg>
             ),
             label: 'Departments',
+        },
+        {
+            href: '/location',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
+                </svg>
+            ),
+            label: 'Location',
         },
         {
             href: '/notifications',

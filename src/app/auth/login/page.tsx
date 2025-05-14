@@ -1,8 +1,9 @@
 'use client';
 
-import { Alert, Button, Divider, PasswordInput, TextInput } from '@mantine/core';
+import { setAuth } from '@/context/AuthProvider';
+import { post } from '@/util/api';
+import { Alert, Button, PasswordInput, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -13,12 +14,12 @@ export default function LoginPage() {
 
     const form = useForm({
         initialValues: {
-            email: '',
+            username: '',
             password: '',
         },
         validate: {
-            email: (value) => (/^\S+@\S+\.\S+$/.test(value) ? null : 'Invalid email'),
-            password: (value) => (value.length < 6 ? 'Password must be at least 6 characters' : null),
+            username: (value) => (value.length < 3 ? 'Username must be at least 3 characters' : null),
+            password: (value) => (value.length < 3 ? 'Password must be at least 5 characters' : null),
         },
     });
 
@@ -27,13 +28,9 @@ export default function LoginPage() {
             setError('');
             setLoading(true);
 
-            // In a real application, you would call your authentication API here
-            console.log('Login attempt with:', values);
+            const response: { accessToken: string } = await post('/api/auth/login', JSON.stringify(values));
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // For demo purposes, redirect to dashboard
+            setAuth(response.accessToken);
             router.push('/');
         } catch (err) {
             setError('Invalid email or password');
@@ -61,15 +58,13 @@ export default function LoginPage() {
 
                 <form onSubmit={form.onSubmit(handleSubmit)}>
                     <TextInput
-                        label="Email"
-                        placeholder="your@email.com"
+                        label="Username"
                         required
-                        {...form.getInputProps('email')}
+                        {...form.getInputProps('username')}
                     />
 
                     <PasswordInput
                         label="Password"
-                        placeholder="Your password"
                         required
                         className="mt-4"
                         {...form.getInputProps('password')}
@@ -79,15 +74,6 @@ export default function LoginPage() {
                         Sign in
                     </Button>
                 </form>
-
-                <Divider label="Or" labelPosition="center" className="my-6" />
-
-                <div className="text-center mt-4">
-                    Don&apos;t have an account?{' '}
-                    <Link href="/auth/register" className="text-blue-600 hover:underline">
-                        Register
-                    </Link>
-                </div>
             </div>
         </div>
     );

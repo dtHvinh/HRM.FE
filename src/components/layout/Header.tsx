@@ -20,13 +20,6 @@ export default function Header() {
                         </Link>
                     </Tooltip>
                 </div>
-
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-medium">
-                        JD
-                    </div>
-                    <span className="font-medium hidden sm:inline-block">John Doe</span>
-                </div>
             </div>
         </header>
     );

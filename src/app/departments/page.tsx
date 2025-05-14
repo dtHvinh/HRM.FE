@@ -56,8 +56,6 @@ export default function DepartmentsPage() {
     const handleAddDepartment = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newDeptName.trim()) return;
-        // Here you would call your API or update state
-        // For demo, just log and close
         console.log('Add department:', newDeptName);
         setShowAddModal(false);
         setNewDeptName('');
@@ -111,7 +109,7 @@ export default function DepartmentsPage() {
                         </div>
                         <div className="bg-gray-50 px-6 py-3 flex justify-end">
                             <Link href={`/departments/${department.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                View Details
+                                View
                             </Link>
                         </div>
                     </div>
