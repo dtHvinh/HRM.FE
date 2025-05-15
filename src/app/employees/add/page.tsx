@@ -1,19 +1,31 @@
 'use client';
 
 import MainLayout from '@/components/layout/MainLayout';
+import { fetcher } from '@/util/api';
 import { Button, Select, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import Link from 'next/link';
+import useSWR from 'swr';
 
 export default function AddEmployeePage() {
+    // Fetch provinces and wards data
+    const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
+    const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
+    const { data: departments } = useSWR<{ departmentId: number; name: string }[]>('/api/departments', fetcher);
+
+    // Transform data for select components
+    const provinceOptions = provinces?.map(p => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
+    const wardOptions = wards?.map(w => ({ value: w.wardId.toString(), label: w.wardName })) || [];
+    const departmentOptions = departments?.map(d => ({ value: d.departmentId.toString(), label: d.name })) || [];
+
     const form = useForm({
         initialValues: {
             fullName: '',
             dateOfBirth: null,
             gender: '',
-            hometown: '',
-            address: '',
+            provinceId: '',
+            wardId: '',
             email: '',
             phone: '',
             department: '',
@@ -26,8 +38,8 @@ export default function AddEmployeePage() {
             department: (value) => (!value ? 'Please select a department' : null),
             gender: (value) => (!value ? 'Please select a gender' : null),
             dateOfBirth: (value) => (!value ? 'Please select a date of birth' : null),
-            hometown: (value) => (!value ? 'Hometown is required' : null),
-            address: (value) => (!value ? 'Address is required' : null),
+            provinceId: (value) => (!value ? 'Province is required' : null),
+            wardId: (value) => (!value ? 'Ward is required' : null),
         },
     });
 
@@ -87,24 +99,29 @@ export default function AddEmployeePage() {
                             />
                         </div>
 
-                        <div>
-                            <TextInput
-                                label="Hometown"
-                                placeholder="Enter hometown (e.g., New York City)"
-                                description="Enter the city where you were born or grew up"
-                                {...form.getInputProps('hometown')}
-                                required
-                            />
-                        </div>
+                        <div className="md:col-span-2">
+                            <div className="text-sm font-medium mb-2">Address</div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Select
+                                    label="Province"
+                                    placeholder="Select province"
+                                    data={provinceOptions}
+                                    searchable
+                                    nothingFoundMessage="No provinces found"
+                                    {...form.getInputProps('provinceId')}
+                                    required
+                                />
 
-                        <div>
-                            <TextInput
-                                label="Address"
-                                placeholder="Enter complete address"
-                                description="Include street address, city, state, and postal code"
-                                {...form.getInputProps('address')}
-                                required
-                            />
+                                <Select
+                                    label="Ward"
+                                    placeholder="Select ward"
+                                    data={wardOptions}
+                                    searchable
+                                    nothingFoundMessage="No wards found"
+                                    {...form.getInputProps('wardId')}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div>
@@ -133,16 +150,7 @@ export default function AddEmployeePage() {
                                 label="Department"
                                 placeholder="Select department"
                                 description="Choose the department you will be working in"
-                                data={[
-                                    { value: 'Engineering', label: 'Engineering' },
-                                    { value: 'Marketing', label: 'Marketing' },
-                                    { value: 'Sales', label: 'Sales' },
-                                    { value: 'HR', label: 'HR' },
-                                    { value: 'Finance', label: 'Finance' },
-                                    { value: 'Customer Support', label: 'Customer Support' },
-                                    { value: 'Research & Development', label: 'Research & Development' },
-                                    { value: 'Legal', label: 'Legal' },
-                                ]}
+                                data={departmentOptions}
                                 {...form.getInputProps('department')}
                                 required
                             />
