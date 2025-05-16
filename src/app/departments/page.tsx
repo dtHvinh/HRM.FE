@@ -1,17 +1,21 @@
 'use client'
 
+import ActionButton from '@/components/button/ActionButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { del, fetcher, post, put } from '@/util/api';
 import { notifyError } from '@/util/toast-util';
 import { LoadingOverlay, Text, TextInput } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import { Check, Plus, X } from 'lucide-react';
-import Link from 'next/link';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
 export default function DepartmentsPage() {
-    const { data: departments, error: departmentsError, isLoading: departmentsLoading } = useSWR<{ departmentId: number, name: string }[]>('/api/departments', fetcher);
+    const {
+        data: departments,
+        error: departmentsError,
+        isLoading: departmentsLoading
+    } = useSWR<{ departmentId: number, name: string }[]>('/api/departments', fetcher);
 
     const [isAddingDepartment, setIsAddingDepartment] = useState(false);
     const [newDeptName, setNewDeptName] = useState('');
@@ -119,47 +123,22 @@ export default function DepartmentsPage() {
                                         <td className="px-6 py-3 flex gap-2 justify-end">
                                             {editingDepartmentId === department.departmentId ? (
                                                 <>
-                                                    <button
-                                                        className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
+                                                    <ActionButton
                                                         onClick={() => handleEditDepartment(department.departmentId)}
-                                                        title="Save"
-                                                    >
-                                                        <Check size={16} />
-                                                    </button>
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
+                                                        kind='check'
+                                                    />
+                                                    <ActionButton
                                                         onClick={() => {
                                                             setEditingDepartmentId(null);
                                                             setEditDepartmentName('');
                                                         }}
-                                                        title="Cancel"
-                                                    >
-                                                        <X size={16} />
-                                                    </button>
+                                                        kind="cancel"
+                                                    />
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Link
-                                                        href={`/departments/${department.departmentId}`}
-                                                        className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300"
-                                                        title="View"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" /><circle cx="12" cy="12" r="3" /></svg>
-                                                    </Link>
-                                                    <button
-                                                        className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300"
-                                                        onClick={() => startEditingDepartment(department)}
-                                                        title="Edit"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
-                                                    </button>
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300"
-                                                        onClick={() => handleAskDeleteDepartment(department.name, department.departmentId)}
-                                                        title="Delete"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                                    </button>
+                                                    <ActionButton onClick={() => startEditingDepartment(department)} kind="edit" />
+                                                    <ActionButton onClick={() => handleAskDeleteDepartment(department.name, department.departmentId)} kind="delete" />
                                                 </>
                                             )}
                                         </td>
@@ -176,23 +155,17 @@ export default function DepartmentsPage() {
                                             />
                                         </td>
                                         <td className="px-6 py-3 flex gap-2 justify-end">
-                                            <button
-                                                className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
+                                            <ActionButton
                                                 onClick={handleAddDepartment}
-                                                title="Save"
-                                            >
-                                                <Check size={16} />
-                                            </button>
-                                            <button
-                                                className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
+                                                kind='check'
+                                            />
+                                            <ActionButton
                                                 onClick={() => {
                                                     setIsAddingDepartment(false);
                                                     setNewDeptName('');
                                                 }}
-                                                title="Cancel"
-                                            >
-                                                <X size={16} />
-                                            </button>
+                                                kind="cancel"
+                                            />
                                         </td>
                                     </tr>
                                 )}

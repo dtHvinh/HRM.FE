@@ -1,23 +1,30 @@
 'use client';
 
 import MainLayout from '@/components/layout/MainLayout';
-import { fetcher } from '@/util/api';
-import { Button, Select, TextInput } from '@mantine/core';
+import { fetcher, post } from '@/util/api';
+import { countryCallingCodes } from '@/util/dataset';
+import { notifyError } from '@/util/toast-util';
+import { Autocomplete, Button, Select, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 
 export default function AddEmployeePage() {
+    const router = useRouter();
+
     // Fetch provinces and wards data
     const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
     const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
     const { data: departments } = useSWR<{ departmentId: number; name: string }[]>('/api/departments', fetcher);
+    const { data: positions } = useSWR<{ positionId: number; name: string }[]>('/api/positions', fetcher);
 
     // Transform data for select components
     const provinceOptions = provinces?.map(p => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
     const wardOptions = wards?.map(w => ({ value: w.wardId.toString(), label: w.wardName })) || [];
     const departmentOptions = departments?.map(d => ({ value: d.departmentId.toString(), label: d.name })) || [];
+    const positionOptions = positions?.map(p => ({ value: p.positionId.toString(), label: p.name })) || [];
 
     const form = useForm({
         initialValues: {
@@ -29,6 +36,7 @@ export default function AddEmployeePage() {
             email: '',
             phone: '',
             department: '',
+            position: '',
         },
 
         validate: {
@@ -43,8 +51,13 @@ export default function AddEmployeePage() {
         },
     });
 
-    const handleSubmit = form.onSubmit((values) => {
-        console.log(values);
+    const handleSubmit = form.onSubmit(async (values) => {
+        try {
+            await post('/api/employees', JSON.stringify(values));
+            router.push('/');
+        } catch (error) {
+            notifyError('Failed to add employee');
+        }
     });
 
     return (
@@ -63,14 +76,14 @@ export default function AddEmployeePage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
+            <div className="p-6">
                 <form onSubmit={handleSubmit}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="md:col-span-2">
                             <TextInput
                                 label="Full Name"
                                 placeholder="Enter full name (e.g., John Smith)"
-                                description="Enter your complete name as it appears on official documents"
+                                description="Enter employee complete name as it appears on official documents"
                                 {...form.getInputProps('fullName')}
                                 required
                             />
@@ -89,6 +102,7 @@ export default function AddEmployeePage() {
                         <div>
                             <Select
                                 label="Gender"
+                                description="Select employee gender"
                                 placeholder="Select gender"
                                 data={[
                                     { value: 'Male', label: 'Male' },
@@ -128,7 +142,7 @@ export default function AddEmployeePage() {
                             <TextInput
                                 label="Email"
                                 placeholder="Enter work email"
-                                description="Use your professional email address"
+                                description="Use employee professional email address"
                                 type="email"
                                 {...form.getInputProps('email')}
                                 required
@@ -136,8 +150,10 @@ export default function AddEmployeePage() {
                         </div>
 
                         <div>
-                            <TextInput
+                            <Autocomplete
                                 label="Phone"
+                                limit={5}
+                                data={countryCallingCodes}
                                 placeholder="(+XX) XXX-XXXX"
                                 description="Enter phone number in international format"
                                 {...form.getInputProps('phone')}
@@ -149,9 +165,20 @@ export default function AddEmployeePage() {
                             <Select
                                 label="Department"
                                 placeholder="Select department"
-                                description="Choose the department you will be working in"
+                                description="Choose the department"
                                 data={departmentOptions}
                                 {...form.getInputProps('department')}
+                                required
+                            />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <Select
+                                label="Position"
+                                placeholder="Select position"
+                                description="Choose the position"
+                                data={positionOptions}
+                                {...form.getInputProps('position')}
                                 required
                             />
                         </div>

@@ -1,11 +1,12 @@
 'use client';
 
+import ActionButton from '@/components/button/ActionButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { del, fetcher, post, put } from '@/util/api';
 import { notifyError } from '@/util/toast-util';
 import { LoadingOverlay, Text, TextInput } from '@mantine/core';
 import { modals } from '@mantine/modals';
-import { Check, Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
 
@@ -177,40 +178,16 @@ export default function LocationPage() {
                                         <td className="px-6 py-3 flex gap-2 justify-end">
                                             {editingProvinceId === province.provinceId ? (
                                                 <>
-                                                    <button
-                                                        className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
-                                                        onClick={() => handleEditProvince(province.provinceId)}
-                                                        title="Save"
-                                                    >
-                                                        <Check size={16} />
-                                                    </button>
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
-                                                        onClick={() => {
-                                                            setEditingProvinceId(null);
-                                                            setEditProvinceName('');
-                                                        }}
-                                                        title="Cancel"
-                                                    >
-                                                        <X size={16} />
-                                                    </button>
+                                                    <ActionButton kind='check' onClick={() => handleEditProvince(province.provinceId)} />
+                                                    <ActionButton kind='cancel' onClick={() => {
+                                                        setEditingProvinceId(null);
+                                                        setEditProvinceName('');
+                                                    }} />
                                                 </>
                                             ) : (
                                                 <>
-                                                    <button
-                                                        className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300"
-                                                        onClick={() => startEditingProvince(province)}
-                                                        title="Edit"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
-                                                    </button>
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300"
-                                                        onClick={() => handleAskDeleteProvince(province.provinceName, province.provinceId)}
-                                                        title="Delete"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                                    </button>
+                                                    <ActionButton kind='edit' onClick={() => startEditingProvince(province)} />
+                                                    <ActionButton kind='delete' onClick={() => handleAskDeleteProvince(province.provinceName, province.provinceId)} />
                                                 </>
                                             )}
                                         </td>
@@ -227,23 +204,11 @@ export default function LocationPage() {
                                             />
                                         </td>
                                         <td className="px-6 py-3 flex gap-2 justify-end">
-                                            <button
-                                                className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
-                                                onClick={handleAddProvince}
-                                                title="Save"
-                                            >
-                                                <Check size={16} />
-                                            </button>
-                                            <button
-                                                className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
-                                                onClick={() => {
-                                                    setIsAddingProvince(false);
-                                                    setNewProvinceName('');
-                                                }}
-                                                title="Cancel"
-                                            >
-                                                <X size={16} />
-                                            </button>
+                                            <ActionButton kind='check' onClick={handleAddProvince} />
+                                            <ActionButton kind='cancel' onClick={() => {
+                                                setIsAddingProvince(false);
+                                                setNewProvinceName('');
+                                            }} />
                                         </td>
                                     </tr>
                                 )}
@@ -292,40 +257,16 @@ export default function LocationPage() {
                                         <td className="px-6 py-3 flex gap-2 justify-end">
                                             {editingWardId === ward.wardId ? (
                                                 <>
-                                                    <button
-                                                        className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
-                                                        onClick={() => handleEditWard(ward.wardId)}
-                                                        title="Save"
-                                                    >
-                                                        <Check size={16} />
-                                                    </button>
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
-                                                        onClick={() => {
-                                                            setEditingWardId(null);
-                                                            setEditWardName('');
-                                                        }}
-                                                        title="Cancel"
-                                                    >
-                                                        <X size={16} />
-                                                    </button>
+                                                    <ActionButton kind='check' onClick={() => handleEditWard(ward.wardId)} />
+                                                    <ActionButton kind='cancel' onClick={() => {
+                                                        setEditingWardId(null);
+                                                        setEditWardName('');
+                                                    }} />
                                                 </>
                                             ) : (
                                                 <>
-                                                    <button
-                                                        className="text-blue-600 hover:text-blue-800 p-2 rounded transition-colors border group-hover:border-blue-300"
-                                                        onClick={() => startEditingWard(ward)}
-                                                        title="Edit"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19.5 3 21l1.5-4L16.5 3.5z" /></svg>
-                                                    </button>
-                                                    <button
-                                                        className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border group-hover:border-red-300"
-                                                        onClick={() => handleAskDeleteWard(ward.wardName, ward.wardId)}
-                                                        title="Delete"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                                                    </button>
+                                                    <ActionButton kind='edit' onClick={() => startEditingWard(ward)} />
+                                                    <ActionButton kind='delete' onClick={() => handleAskDeleteWard(ward.wardName, ward.wardId)} />
                                                 </>
                                             )}
                                         </td>
@@ -342,23 +283,11 @@ export default function LocationPage() {
                                             />
                                         </td>
                                         <td className="px-6 py-3 flex gap-2 justify-end">
-                                            <button
-                                                className="text-green-600 hover:text-green-800 p-2 rounded transition-colors border hover:border-green-300"
-                                                onClick={handleAddWard}
-                                                title="Save"
-                                            >
-                                                <Check size={16} />
-                                            </button>
-                                            <button
-                                                className="text-red-600 hover:text-red-800 p-2 rounded transition-colors border hover:border-red-300"
-                                                onClick={() => {
-                                                    setIsAddingWard(false);
-                                                    setNewWardName('');
-                                                }}
-                                                title="Cancel"
-                                            >
-                                                <X size={16} />
-                                            </button>
+                                            <ActionButton kind='check' onClick={handleAddWard} />
+                                            <ActionButton kind='cancel' onClick={() => {
+                                                setIsAddingWard(false);
+                                                setNewWardName('');
+                                            }} />
                                         </td>
                                     </tr>
                                 )}

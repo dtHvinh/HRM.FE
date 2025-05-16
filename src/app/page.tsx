@@ -1,83 +1,93 @@
-import MainLayout from '@/components/layout/MainLayout';
-import Link from 'next/link';
+'use client'
 
-const employeesData = [
-    {
-        id: 1,
-        fullName: 'John Doe',
-        dateOfBirth: '1985-05-15',
-        gender: 'Male',
-        province: 'New York',
-        ward: 'Manhattan',
-        address: '123 Main St, New York, NY',
-        email: 'john.doe@example.com',
-        phone: '(555) 123-4567',
-        department: 'Engineering',
-    },
-    {
-        id: 2,
-        fullName: 'Jane Smith',
-        dateOfBirth: '1990-08-22',
-        gender: 'Female',
-        province: 'California',
-        ward: 'Downtown LA',
-        address: '456 Oak Ave, Los Angeles, CA',
-        email: 'jane.smith@example.com',
-        phone: '(555) 987-6543',
-        department: 'Marketing',
-    },
-    {
-        id: 3,
-        fullName: 'Michael Brown',
-        dateOfBirth: '1988-03-10',
-        gender: 'Male',
-        province: 'Illinois',
-        ward: 'Loop',
-        address: '789 Pine St, Chicago, IL',
-        email: 'michael.brown@example.com',
-        phone: '(555) 456-7890',
-        department: 'Engineering',
-    },
-    {
-        id: 4,
-        fullName: 'Emily Davis',
-        dateOfBirth: '1992-11-28',
-        gender: 'Female',
-        province: 'Massachusetts',
-        ward: 'Back Bay',
-        address: '321 Elm St, Boston, MA',
-        email: 'emily.davis@example.com',
-        phone: '(555) 234-5678',
-        department: 'Marketing',
-    },
-    {
-        id: 5,
-        fullName: 'David Wilson',
-        dateOfBirth: '1983-07-14',
-        gender: 'Male',
-        province: 'Washington',
-        ward: 'Capitol Hill',
-        address: '654 Maple Ave, Seattle, WA',
-        email: 'david.wilson@example.com',
-        phone: '(555) 876-5432',
-        department: 'Sales',
-    },
-    {
-        id: 6,
-        fullName: 'Sarah Johnson',
-        dateOfBirth: '1995-02-18',
-        gender: 'Female',
-        province: 'Florida',
-        ward: 'South Beach',
-        address: '987 Beach Blvd, Miami, FL',
-        email: 'sarah.johnson@example.com',
-        phone: '(555) 345-6789',
-        department: 'Marketing',
-    },
-];
+import ActionButton from '@/components/button/ActionButton';
+import MainLayout from '@/components/layout/MainLayout';
+import { fetcher, put } from '@/util/api';
+import { countryCallingCodes } from '@/util/dataset';
+import { Autocomplete, Select, TextInput } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import useSWR, { mutate } from 'swr';
+
+interface GetEmployeeDTO {
+    employeeId: number;
+    fullName: string;
+    dob: string;
+    gender: string;
+    email: string;
+    phone: string;
+    department: string;
+    position: string;
+    province: string;
+    ward: string;
+}
+
+const defaultForm = {
+    fullName: '',
+    email: '',
+    phone: '',
+    dob: '',
+    gender: '',
+    provinceId: '0',
+    wardId: '0',
+}
 
 export default function EmployeesPage() {
-    const employees = employeesData;
+    const [departmentFilter, setDepartmentFilter] = useState<string | null>(null);
+    const [genderFilter, setGenderFilter] = useState<string | null>(null);
+    const [provinceFilter, setProvinceFilter] = useState<string | null>(null);
+    const [wardFilter, setWardFilter] = useState<string | null>(null);
+
+    const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
+    const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
+    const { data: employees } = useSWR<GetEmployeeDTO[]>(
+        `/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}`, fetcher);
+    const { data: departments, error: departmentsError, isLoading: departmentsLoading } = useSWR<{ departmentId: number, name: string }[]>('/api/departments', fetcher);
+    const departmentOptions = departments?.map(d => ({ value: d.departmentId.toString(), label: d.name })) || [];
+    const provinceOptions = provinces?.map(p => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
+    const wardOptions = wards?.map(w => ({ value: w.wardId.toString(), label: w.wardName })) || [];
+
+    const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(null);
+    const [editForm, setEditForm] = useState(defaultForm);
+
+    const startEditing = (employee: GetEmployeeDTO) => {
+        setEditingEmployeeId(employee.employeeId);
+        setEditForm({
+            fullName: '',
+            email: '',
+            phone: '',
+            dob: '',
+            gender: '',
+            provinceId: '0',
+            wardId: '0',
+        });
+    };
+
+    const handleSaveEdit = async (employeeId: number) => {
+        try {
+            await put(`/api/employees/${employeeId}`, JSON.stringify(editForm));
+            await mutate(`/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}`);
+            setEditingEmployeeId(null);
+            setEditForm(defaultForm);
+        } catch (error) {
+            console.error('Failed to update employee:', error);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditingEmployeeId(null);
+        setEditForm({
+            fullName: '',
+            email: '',
+            phone: '',
+            dob: '',
+            gender: '',
+            provinceId: '',
+            wardId: '',
+        });
+    };
 
     return (
         <MainLayout activePath="/">
@@ -86,66 +96,61 @@ export default function EmployeesPage() {
                     <h1 className="text-2xl font-bold">Employees</h1>
                     <p className="text-gray-700">Manage your employees</p>
                 </div>
-                <Link href="/employees/add" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 5v14" />
-                        <path d="M5 12h14" />
-                    </svg>
-                    Add Employee
+                <Link href="/employees/add" className="p-2 px-3 transition-colors rounded-lg inline-flex items-center gap-2 hover:bg-gray-200">
+                    <Plus size={16} className="cursor-pointer" />
+                    Add
                 </Link>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label htmlFor="search" className="block text-sm font-medium text-gray-800 mb-1">Search</label>
-                        <div className="relative">
-                            <input
-                                type="text"
-                                id="search"
-                                placeholder="Search employees..."
-                                className="w-full py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                            >
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.3-4.3" />
-                            </svg>
-                        </div>
+                        <Select
+                            label="Province"
+                            placeholder="Select province"
+                            description="Choose the province"
+                            data={provinceOptions}
+                            onChange={(value) => setProvinceFilter(value)}
+                            required
+                            searchable
+                            clearable
+                        />
                     </div>
                     <div>
-                        <label htmlFor="department" className="block text-sm font-medium text-gray-800 mb-1">Department</label>
-                        <select
-                            id="department"
-                            className="w-full py-2 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="">All Departments</option>
-                            <option value="Engineering">Engineering</option>
-                            <option value="Marketing">Marketing</option>
-                            <option value="Sales">Sales</option>
-                            <option value="HR">HR</option>
-                        </select>
+                        <Select
+                            label="Ward"
+                            description="Choose the ward"
+                            placeholder="Select ward"
+                            data={wardOptions}
+                            onChange={(value) => setWardFilter(value)}
+                            required
+                            clearable
+                            searchable
+                        />
                     </div>
                     <div>
-                        <label htmlFor="gender" className="block text-sm font-medium text-gray-800 mb-1">Gender</label>
-                        <select
-                            id="gender"
-                            className="w-full py-2 px-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        >
-                            <option value="">All Genders</option>
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                        </select>
+                        <Select
+                            label="Department"
+                            placeholder="Select department"
+                            description="Choose the department"
+                            data={departmentOptions}
+                            clearable
+                            onChange={(value) => setDepartmentFilter(value)}
+                            searchable
+                            required
+                        />
+                    </div>
+                    <div>
+                        <Select
+                            label="Gender"
+                            placeholder="Select gender"
+                            description="Choose the gender"
+                            data={[{ value: '1', label: 'Male' }, { value: '2', label: 'Female' }]}
+                            clearable
+                            onChange={(value) => setGenderFilter(value)}
+                            searchable
+                            required
+                        />
                     </div>
                 </div>
             </div>
@@ -162,101 +167,166 @@ export default function EmployeesPage() {
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Province</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Ward</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Email</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Phone</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Department</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Position</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
-                            {employees.map((employee) => (
-                                <tr key={employee.id} className="hover:bg-gray-50">
+                            {employees?.map((employee) => (
+                                <tr key={employee.employeeId} className="hover:bg-gray-50">
                                     <td className="py-4 px-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 mr-3">
                                                 {employee.fullName.split(' ').map(name => name[0]).join('')}
                                             </div>
                                             <div>
-                                                <Link href={`/employees/${employee.id}`} className="text-sm font-medium text-gray-900 hover:text-blue-600">
-                                                    {employee.fullName}
-                                                </Link>
+                                                {editingEmployeeId === employee.employeeId ? (
+                                                    <TextInput
+                                                        description={employee.fullName}
+                                                        value={editForm.fullName}
+                                                        onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })}
+                                                        size="xs"
+                                                    />
+                                                ) : (
+                                                    <Link href={`/employees/${employee.employeeId}`} className="text-sm font-medium text-gray-900 hover:text-blue-600">
+                                                        {employee.fullName}
+                                                    </Link>
+                                                )}
                                             </div>
                                         </div>
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {new Date(employee.dateOfBirth).toLocaleDateString()}
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <DateInput
+                                                description={new Date(employee.dob).toLocaleDateString()}
+                                                value={editForm.dob ? new Date(editForm.dob) : null}
+                                                onChange={(date) => setEditForm({ ...editForm, dob: date ? date.toString() : '' })}
+                                                size="xs"
+                                                valueFormat="DD/MM/YYYY"
+                                            />
+                                        ) : (
+                                            new Date(employee.dob).toLocaleDateString()
+                                        )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {employee.gender}
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <Select
+                                                description={employee.gender}
+                                                value={editForm.gender}
+                                                onChange={(value) => setEditForm({ ...editForm, gender: value || '' })}
+                                                data={[{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }]}
+                                                size="xs"
+                                            />
+                                        ) : (
+                                            employee.gender
+                                        )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {employee.province}
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <Select
+                                                description={employee.province}
+                                                onChange={(value) => setEditForm({ ...editForm, provinceId: value || '' })}
+                                                data={provinceOptions}
+                                                size="xs"
+                                                searchable
+                                            />
+                                        ) : (
+                                            employee.province
+                                        )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {employee.ward}
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <Select
+                                                description={employee.ward}
+                                                onChange={(value) => setEditForm({ ...editForm, wardId: value || '' })}
+                                                data={wardOptions}
+                                                size="xs"
+                                                searchable
+                                            />
+                                        ) : (
+                                            employee.ward
+                                        )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {employee.email}
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <TextInput
+                                                description={employee.email}
+                                                value={editForm.email}
+                                                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                                size="xs"
+                                            />
+                                        ) : (
+                                            employee.email
+                                        )}
                                     </td>
-                                    <td className="py-4 px-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            {employee.department}
-                                        </span>
+                                    <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <Autocomplete
+                                                description={employee.phone}
+                                                data={countryCallingCodes}
+                                                value={editForm.phone}
+                                                onChange={(e) => setEditForm({ ...editForm, phone: e })}
+                                                size="xs"
+                                            />
+                                        ) : (
+                                            employee.phone
+                                        )}
+                                    </td>
+                                    <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <Link href="/departments" className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                {employee.department}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                                    <polyline points="15 3 21 3 21 9" />
+                                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                                </svg>
+                                            </Link>
+                                        ) : (
+                                            employee.department
+                                        )}
+                                    </td>
+                                    <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
+                                        {editingEmployeeId === employee.employeeId ? (
+                                            <Link href="/positions" className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                                {employee.position}
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                                    <polyline points="15 3 21 3 21 9" />
+                                                    <line x1="10" y1="14" x2="21" y2="3" />
+                                                </svg>
+                                            </Link>
+                                        ) : (
+                                            employee.position
+                                        )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
                                         <div className="flex items-center gap-2">
-                                            <Link href={`/employees/${employee.id}`} className="text-blue-600 hover:text-blue-900">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                                                    <circle cx="12" cy="12" r="3" />
-                                                </svg>
-                                            </Link>
-                                            <button className="text-gray-600 hover:text-gray-900">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                                                </svg>
-                                            </button>
+                                            {editingEmployeeId === employee.employeeId ? (
+                                                <>
+                                                    <ActionButton
+                                                        kind="check"
+                                                        onClick={() => handleSaveEdit(employee.employeeId)}
+                                                    />
+                                                    <ActionButton
+                                                        kind="cancel"
+                                                        onClick={handleCancelEdit}
+                                                    />
+                                                </>
+                                            ) : (
+                                                <ActionButton
+                                                    kind="edit"
+                                                    onClick={() => startEditing(employee)}
+                                                />
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
-                <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
-                    <div className="flex-1 flex justify-between sm:hidden">
-                        <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Previous
-                        </button>
-                        <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                            Next
-                        </button>
-                    </div>
-                    <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                        <div>
-                            <p className="text-sm text-gray-800">
-                                Showing <span className="font-medium">1</span> to <span className="font-medium">6</span> of{' '}
-                                <span className="font-medium">6</span> results
-                            </p>
-                        </div>
-                        <div>
-                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                                <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span className="sr-only">Previous</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="m15 18-6-6 6-6" />
-                                    </svg>
-                                </button>
-                                <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                                    1
-                                </button>
-                                <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                                    <span className="sr-only">Next</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <path d="m9 18 6-6-6-6" />
-                                    </svg>
-                                </button>
-                            </nav>
-                        </div>
-                    </div>
                 </div>
             </div>
         </MainLayout>
