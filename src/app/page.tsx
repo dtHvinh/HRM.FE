@@ -2,11 +2,12 @@
 
 import ActionButton from '@/components/button/ActionButton';
 import MainLayout from '@/components/layout/MainLayout';
+import TransferModal from '@/components/modal/TransferModal';
 import { fetcher, put } from '@/util/api';
 import { countryCallingCodes } from '@/util/dataset';
 import { Autocomplete, Select, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { Plus } from 'lucide-react';
+import { Plus, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
@@ -51,6 +52,10 @@ export default function EmployeesPage() {
 
     const [editingEmployeeId, setEditingEmployeeId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState(defaultForm);
+
+    // Transfer modal state
+    const [transferModalOpen, setTransferModalOpen] = useState(false);
+    const [selectedEmployee, setSelectedEmployee] = useState<GetEmployeeDTO | null>(null);
 
     const startEditing = (employee: GetEmployeeDTO) => {
         setEditingEmployeeId(employee.employeeId);
@@ -275,32 +280,10 @@ export default function EmployeesPage() {
                                         )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {editingEmployeeId === employee.employeeId ? (
-                                            <Link href="/departments" className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                {employee.department}
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                                    <polyline points="15 3 21 3 21 9" />
-                                                    <line x1="10" y1="14" x2="21" y2="3" />
-                                                </svg>
-                                            </Link>
-                                        ) : (
-                                            employee.department
-                                        )}
+                                        {employee.department}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {editingEmployeeId === employee.employeeId ? (
-                                            <Link href="/positions" className="text-blue-600 hover:text-blue-800 flex items-center gap-1">
-                                                {employee.position}
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                                    <polyline points="15 3 21 3 21 9" />
-                                                    <line x1="10" y1="14" x2="21" y2="3" />
-                                                </svg>
-                                            </Link>
-                                        ) : (
-                                            employee.position
-                                        )}
+                                        {employee.position}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
                                         <div className="flex items-center gap-2">
@@ -316,10 +299,22 @@ export default function EmployeesPage() {
                                                     />
                                                 </>
                                             ) : (
-                                                <ActionButton
-                                                    kind="edit"
-                                                    onClick={() => startEditing(employee)}
-                                                />
+                                                <>
+                                                    <ActionButton
+                                                        kind="edit"
+                                                        onClick={() => startEditing(employee)}
+                                                    />
+                                                    <button
+                                                        className="p-2 rounded-full"
+                                                        onClick={() => {
+                                                            setSelectedEmployee(employee);
+                                                            setTransferModalOpen(true);
+                                                        }}
+                                                        title="Transfer employee"
+                                                    >
+                                                        <RefreshCw size={16} className="text-gray-600 cursor-pointer" />
+                                                    </button>
+                                                </>
                                             )}
                                         </div>
                                     </td>
@@ -329,6 +324,21 @@ export default function EmployeesPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Transfer Modal */}
+            {selectedEmployee && (
+                <TransferModal
+                    isOpen={transferModalOpen}
+                    onClose={() => {
+                        setTransferModalOpen(false);
+                        setSelectedEmployee(null);
+                    }}
+                    employeeId={selectedEmployee.employeeId}
+                    employeeName={selectedEmployee.fullName}
+                    currentDepartment={selectedEmployee.department}
+                    currentPosition={selectedEmployee.position}
+                />
+            )}
         </MainLayout>
     );
 }

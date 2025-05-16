@@ -13,6 +13,7 @@ interface GetDepartmentDTO {
     transferInDate: string;
     transferOutDate: string;
     appointmentDate: string;
+    position: string;
 }
 
 interface GetEmployeeDetailResponse {
@@ -97,20 +98,12 @@ export default function EmployeeDetailPage() {
                     </Link>
                     <h1 className="text-2xl font-bold">Employee Details</h1>
                 </div>
-                <div className="flex gap-3">
-                    <Link
-                        href={`/employees/${employee.employeeId}/edit`}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        Edit
-                    </Link>
-                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Left column - Personal Information */}
                 <div className="lg:col-span-1">
-                    <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Card padding="lg" radius="md" >
                         <div className="flex flex-col items-center mb-6">
                             <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-3xl font-semibold mb-4">
                                 {employee.fullName.split(' ').map(name => name[0]).join('')}
@@ -144,7 +137,7 @@ export default function EmployeeDetailPage() {
 
                 {/* Right column - Contact & Department Information */}
                 <div className="lg:col-span-2">
-                    <Card shadow="sm" padding="lg" radius="md" withBorder className="mb-6">
+                    <Card padding="lg" radius="md" className="mb-6">
                         <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -171,7 +164,7 @@ export default function EmployeeDetailPage() {
                         </div>
                     </Card>
 
-                    <Card shadow="sm" padding="lg" radius="md" withBorder>
+                    <Card padding="lg" radius="md">
                         <h3 className="text-lg font-semibold mb-4">Department History</h3>
 
                         {employee.departments.length === 0 ? (
@@ -181,7 +174,7 @@ export default function EmployeeDetailPage() {
                         ) : (
                             <Timeline active={employee.departments.length - 1} bulletSize={24} lineWidth={2}>
                                 {employee.departments.map((department, index) => (
-                                    <Timeline.Item 
+                                    <Timeline.Item
                                         key={`${department.departmentId}-${index}`}
                                         bullet={<div className="flex items-center justify-center w-full h-full text-xs font-bold">{index + 1}</div>}
                                         title={
@@ -191,9 +184,9 @@ export default function EmployeeDetailPage() {
                                         }
                                     >
                                         <div className="bg-gray-50 p-4 rounded-md mt-2">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                                 <div>
-                                                    <Text size="sm" color="dimmed">Transfer Period</Text>
+                                                    <Text size="sm" c="dimmed">Transfer Period</Text>
                                                     <div className="flex items-center gap-2 mt-1">
                                                         <Badge color={!department.transferOutDate ? "green" : "blue"} variant="light">
                                                             {formatDate(department.transferInDate)} - {formatDate(department.transferOutDate)}
@@ -203,10 +196,17 @@ export default function EmployeeDetailPage() {
                                                         )}
                                                     </div>
                                                 </div>
-                                                
+
+                                                <div>
+                                                    <Text size="sm" c="dimmed">Position</Text>
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        {department.position}
+                                                    </div>
+                                                </div>
+
                                                 {department.appointmentDate && (
                                                     <div>
-                                                        <Text size="sm" color="dimmed">Appointment Date</Text>
+                                                        <Text size="sm" c="dimmed">Appointment Date</Text>
                                                         <div className="mt-1">
                                                             <Badge color="purple" variant="light">
                                                                 {formatDate(department.appointmentDate)}
