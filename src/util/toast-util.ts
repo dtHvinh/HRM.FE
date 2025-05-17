@@ -8,3 +8,12 @@ export function notifyError(message: string) {
         }
     });
 }
+
+export function notifySuccess(message: string) {
+    toast.success(message, {
+        position: 'top-center',
+        style: {
+            color: 'green',
+        }
+    });
+}
