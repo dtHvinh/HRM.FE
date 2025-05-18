@@ -56,6 +56,16 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
             label: 'Departments',
         },
         {
+            href: '/benefits',
+            icon: (
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 2v20" />
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+            ),
+            label: 'Benefits',
+        },
+        {
             href: '/positions',
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -114,7 +124,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                 </svg>
                 <h1 className="text-xl font-bold">HRM System</h1>
             </div>
-            <nav className="space-y-1 text-black [&>*:nth-child(4)]:border-t-[1px] [&>*:nth-child(4)]:rounded-t-none">
+            <nav className="space-y-1 text-black [&>*:nth-child(5)]:border-t-[1px] [&>*:nth-child(5)]:rounded-t-none">
                 {navItems.map((item) => (
                     <NavItem
                         key={item.href}

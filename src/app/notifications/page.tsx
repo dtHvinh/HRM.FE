@@ -1,51 +1,54 @@
+'use client'
+
 import MainLayout from '@/components/layout/MainLayout';
+import { Plus } from 'lucide-react';
 
 const notificationsData = [
     {
-        id: 1,
-        description: 'Salary increases for Engineering department have been processed.',
-        date: '2023-06-15T09:30:00',
+        notificationId: 1,
+        content: 'Salary increases for Engineering department have been processed.',
+        notificationDate: '2023-06-15T09:30:00',
     },
     {
-        id: 2,
-        description: 'Sarah Johnson has joined the Marketing department.',
-        date: '2023-06-14T14:15:00',
+        notificationId: 2,
+        content: 'Sarah Johnson has joined the Marketing department.',
+        notificationDate: '2023-06-14T14:15:00',
     },
     {
-        id: 3,
-        description: 'HR department monthly meeting scheduled.',
-        date: '2023-06-10T10:00:00',
+        notificationId: 3,
+        content: 'HR department monthly meeting scheduled.',
+        notificationDate: '2023-06-10T10:00:00',
     },
     {
-        id: 4,
-        description: 'Salary increases for Sales department have been processed.',
-        date: '2023-03-15T11:30:00',
+        notificationId: 4,
+        content: 'Salary increases for Sales department have been processed.',
+        notificationDate: '2023-03-15T11:30:00',
     },
     {
-        id: 5,
-        description: 'Remote work policy has been updated. Please review the changes.',
-        date: '2023-03-10T15:45:00',
+        notificationId: 5,
+        content: 'Remote work policy has been updated. Please review the changes.',
+        notificationDate: '2023-03-10T15:45:00',
     },
     {
-        id: 6,
-        description: 'Salary increases for Marketing department have been processed.',
-        date: '2022-12-15T10:15:00',
+        notificationId: 6,
+        content: 'Salary increases for Marketing department have been processed.',
+        notificationDate: '2022-12-15T10:15:00',
     },
     {
-        id: 7,
-        description: 'Office will be closed on December 25th and 26th for Christmas holidays.',
-        date: '2022-12-01T09:00:00',
+        notificationId: 7,
+        content: 'Office will be closed on December 25th and 26th for Christmas holidays.',
+        notificationDate: '2022-12-01T09:00:00',
     },
     {
-        id: 8,
-        description: 'Salary increases for Engineering department have been processed.',
-        date: '2022-09-15T14:30:00',
+        notificationId: 8,
+        content: 'Salary increases for Engineering department have been processed.',
+        notificationDate: '2022-09-15T14:30:00',
     },
 ];
 
 export default function NotificationsPage() {
-    // In a real application, this would be server-side or use React Query
     const notifications = notificationsData;
+    // const { data: notifications } = useSWR<{ notifycationId: number, content: string, notificationDate: string }[]>('/api/notifications', fetcher);
 
     // Helper function to format dates
     const formatDate = (dateString: string) => {
@@ -59,12 +62,11 @@ export default function NotificationsPage() {
         }).format(date);
     };
 
-    // Helper function to group notifications by month/year
-    const groupNotificationsByDate = (notifications: typeof notificationsData) => {
-        const groups: Record<string, typeof notificationsData> = {};
+    const groupNotificationsByDate = (notifications: { notificationId: number, content: string, notificationDate: string }[]) => {
+        const groups: Record<string, typeof notifications> = {};
 
         notifications.forEach(notification => {
-            const date = new Date(notification.date);
+            const date = new Date(notification.notificationDate);
             const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
 
             if (!groups[monthYear]) {
@@ -77,7 +79,7 @@ export default function NotificationsPage() {
         return groups;
     };
 
-    const groupedNotifications = groupNotificationsByDate(notifications);
+    const groupedNotifications = groupNotificationsByDate(notifications ?? []);
 
     const getNotificationIcon = () => {
         return (
@@ -93,7 +95,11 @@ export default function NotificationsPage() {
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold">Notifications</h1>
-                    <p className="text-gray-600">Stay updated with important announcements</p>
+                    <p className="text-gray-600">Sent</p>
+                </div>
+
+                <div>
+                    <Plus />
                 </div>
             </div>
 
@@ -106,7 +112,7 @@ export default function NotificationsPage() {
                         <div className="divide-y divide-gray-100">
                             {notifications.map((notification) => (
                                 <div
-                                    key={notification.id}
+                                    key={notification.notificationId}
                                     className="p-6 hover:bg-gray-50 transition-colors"
                                 >
                                     <div className="flex items-start gap-4">
@@ -115,9 +121,9 @@ export default function NotificationsPage() {
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex items-center justify-between mb-1">
-                                                <span className="text-xs text-gray-500">{formatDate(notification.date)}</span>
+                                                <span className="text-xs text-gray-500">{formatDate(notification.notificationDate)}</span>
                                             </div>
-                                            <p className="text-sm text-gray-600">{notification.description}</p>
+                                            <p className="text-sm text-gray-600">{notification.content}</p>
                                         </div>
                                     </div>
                                 </div>

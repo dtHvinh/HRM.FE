@@ -172,14 +172,14 @@ export default function EmployeeDetailPage() {
 
                 {/* Right column - Contact & Department Information */}
                 <div className="lg:col-span-2">
-                    <div className='max-h-96 overflow-y-auto'>
+                    <div className='min-h-96 overflow-y-auto'>
                         <Card padding="lg" radius="md" className="mt-6">
                             <SalaryManagement employeeId={employeeId} />
                         </Card>
                     </div>
 
                     <div className='max-h-96 overflow-y-auto'>
-                        <Card padding="lg" radius="md">
+                        <Card className='border-t-2 border-gray-200'>
                             <h3 className="text-lg font-semibold mb-4">Department History</h3>
 
                             {employee.departments.length === 0 ? (
