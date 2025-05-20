@@ -77,7 +77,7 @@ export default function EmployeesPage() {
             setEditingEmployeeId(null);
             setEditForm(defaultForm);
         } catch (error) {
-            console.error('Failed to update employee:', error);
+            console.error('Lỗi khi cập nhật nhân viên:', error);
         }
     };
 
@@ -98,12 +98,12 @@ export default function EmployeesPage() {
         <MainLayout activePath="/">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Employees</h1>
-                    <p className="text-gray-700">Manage your employees</p>
+                    <h1 className="text-2xl font-bold">Nhân Viên</h1>
+                    <p className="text-gray-700">Quản lý nhân viên của bạn</p>
                 </div>
                 <Link href="/employees/add" className="p-2 px-3 transition-colors rounded-lg inline-flex items-center gap-2 hover:bg-gray-200">
                     <Plus size={16} className="cursor-pointer" />
-                    Add
+                    Thêm
                 </Link>
             </div>
 
@@ -111,9 +111,9 @@ export default function EmployeesPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                         <Select
-                            label="Province"
-                            placeholder="Select province"
-                            description="Choose the province"
+                            label="Tỉnh/Thành Phố"
+                            placeholder="Chọn tỉnh/thành phố"
+                            description="Chọn tỉnh/thành phố"
                             data={provinceOptions}
                             onChange={(value) => setProvinceFilter(value)}
                             required
@@ -123,9 +123,9 @@ export default function EmployeesPage() {
                     </div>
                     <div>
                         <Select
-                            label="Ward"
-                            description="Choose the ward"
-                            placeholder="Select ward"
+                            label="Quận/Huyện"
+                            description="Chọn quận/huyện"
+                            placeholder="Chọn quận/huyện"
                             data={wardOptions}
                             onChange={(value) => setWardFilter(value)}
                             required
@@ -135,9 +135,9 @@ export default function EmployeesPage() {
                     </div>
                     <div>
                         <Select
-                            label="Department"
-                            placeholder="Select department"
-                            description="Choose the department"
+                            label="Phòng Ban"
+                            placeholder="Chọn phòng ban"
+                            description="Chọn phòng ban"
                             data={departmentOptions}
                             clearable
                             onChange={(value) => setDepartmentFilter(value)}
@@ -147,10 +147,10 @@ export default function EmployeesPage() {
                     </div>
                     <div>
                         <Select
-                            label="Gender"
-                            placeholder="Select gender"
-                            description="Choose the gender"
-                            data={[{ value: '1', label: 'Male' }, { value: '2', label: 'Female' }]}
+                            label="Giới Tính"
+                            placeholder="Chọn giới tính"
+                            description="Chọn giới tính"
+                            data={[{ value: '1', label: 'Nam' }, { value: '2', label: 'Nữ' }]}
                             clearable
                             onChange={(value) => setGenderFilter(value)}
                             searchable
@@ -166,16 +166,16 @@ export default function EmployeesPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50">
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Full Name</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Date of Birth</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Gender</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Province</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Ward</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Họ Tên</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Ngày Sinh</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Giới Tính</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Tỉnh/Thành Phố</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Quận/Huyện</th>
                                 <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Email</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Phone</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Department</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Position</th>
-                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Actions</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Điện Thoại</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Phòng Ban</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Chức Vụ</th>
+                                <th className="py-3 px-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -221,11 +221,11 @@ export default function EmployeesPage() {
                                                 description={employee.gender}
                                                 value={editForm.gender}
                                                 onChange={(value) => setEditForm({ ...editForm, gender: value || '' })}
-                                                data={[{ value: 'Male', label: 'Male' }, { value: 'Female', label: 'Female' }]}
+                                                data={[{ value: 'Nam', label: 'Nam' }, { value: 'Nữ', label: 'Nữ' }]}
                                                 size="xs"
                                             />
                                         ) : (
-                                            employee.gender
+                                            employee.gender === 'Male' ? 'Nam' : employee.gender === 'Female' ? 'Nữ' : employee.gender
                                         )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
@@ -310,7 +310,7 @@ export default function EmployeesPage() {
                                                             setSelectedEmployee(employee);
                                                             setTransferModalOpen(true);
                                                         }}
-                                                        title="Transfer employee"
+                                                        title="Chuyển nhân viên"
                                                     >
                                                         <RefreshCw size={16} className="text-gray-600 cursor-pointer" />
                                                     </button>

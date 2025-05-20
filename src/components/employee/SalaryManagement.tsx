@@ -1,296 +1,215 @@
 'use client'
 
-import ActionButton from '@/components/button/ActionButton';
-import { fetcher, post } from '@/util/api';
+import { fetcher, post, put } from '@/util/api';
 import { notifyError, notifySuccess } from '@/util/toast-util';
-import { Badge, NumberInput, Select, Table, Tabs, Text, Timeline } from '@mantine/core';
+import { Button, NumberInput, Select, Table, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { useState } from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate } from 'swr';
+
+interface SalaryDTO {
+    salaryId: number;
+    employeeId: number;
+    amount: number;
+    effectiveDate: string;
+    endDate: string | null;
+    type: string;
+    note: string;
+}
 
 interface SalaryManagementProps {
     employeeId: string;
 }
 
-interface EmployeeSalary {
-    salaryId: number;
-    salaryCoefficient: number;
-    paymentDate: string;
-}
-
-interface EmployeeBenefit {
-    employeeId: number;
-    insuranceId: number;
-    insuranceName: string;
-    insuranceCoefficient: number;
-    allowanceId: number;
-    allowanceName: string;
-    allowanceCoefficient: number;
-}
-
-interface Insurance {
-    insuranceId: number;
-    insuranceName: string;
-    insuranceCoefficient: number;
-}
-
-interface Allowance {
-    allowanceId: number;
-    allowanceName: string;
-    allowanceCoefficient: number;
-}
-
-const defaultAddSalaryForm = {
-    salaryCoefficient: '',
-    paymentDate: ''
-}
-
-const defaultAddBenefitForm = {
-    insuranceId: '',
-    allowanceId: '',
-}
-
 export default function SalaryManagement({ employeeId }: SalaryManagementProps) {
-    // Tab state
-    const [activeTab, setActiveTab] = useState<string | null>('salary');
-
-    // Salary management state
-    const [isAddingSalary, setIsAddingSalary] = useState(false);
-    const { data: employeeSalaries, error: salaryError, mutate: salaryMutate } = useSWR<EmployeeSalary[]>(
-        `/api/salaries/${employeeId}`,
+    const { data: salaries, error, isLoading } = useSWR<SalaryDTO[]>(
+        `/api/employees/${employeeId}/salaries`,
         fetcher
     );
-    const [addSalaryForm, setAddSalaryForm] = useState<{
-        salaryCoefficient: string | number,
-        paymentDate: string
-    }>(defaultAddSalaryForm);
 
-    // Benefit management state
-    const [isAddingBenefit, setIsAddingBenefit] = useState(false);
-    const { data: employeeBenefits, error: benefitError, mutate: benefitMutate } = useSWR<EmployeeBenefit[]>(
-        `/api/benefits/employee/${employeeId}`,
-        fetcher
-    );
-    console.log(employeeBenefits);
-    // Fetch insurance and allowance data
-    const { data: insurances } = useSWR<Insurance[]>('/api/insurances', fetcher);
-    const { data: allowances } = useSWR<Allowance[]>('/api/allowances', fetcher);
-
-    const [addBenefitForm, setAddBenefitForm] = useState<{
-        insuranceId: string | number,
-        allowanceId: string | number,
-    }>(defaultAddBenefitForm);
+    const [isAdding, setIsAdding] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [newSalary, setNewSalary] = useState({
+        amount: 0,
+        effectiveDate: new Date().toISOString(),
+        type: 'Lương cơ bản',
+        note: '',
+    });
 
     const handleAddSalary = async () => {
-        try {
-            await post(`/api/salaries/${employeeId}`, JSON.stringify(addSalaryForm));
-            salaryMutate();
-            notifySuccess('Successfully added salary');
+        if (newSalary.amount <= 0) {
+            notifyError('Số tiền lương phải lớn hơn 0');
+            return;
         }
-        catch (error) {
-            notifyError('Error adding salary');
-        }
-        setIsAddingSalary(false);
-        setAddSalaryForm(defaultAddSalaryForm);
-    }
 
-    const handleAddBenefit = async () => {
+        setIsSubmitting(true);
         try {
-            await post(`/api/benefits/${employeeId}`, JSON.stringify(addBenefitForm));
-            benefitMutate();
-            notifySuccess('Successfully added benefit');
+            await post(`/api/employees/${employeeId}/salaries`, JSON.stringify({
+                ...newSalary,
+                employeeId: parseInt(employeeId),
+            }));
+
+            // Reset form and refresh data
+            setNewSalary({
+                amount: 0,
+                effectiveDate: new Date().toISOString(),
+                type: 'Lương cơ bản',
+                note: '',
+            });
+            setIsAdding(false);
+            await mutate(`/api/employees/${employeeId}/salaries`);
+            notifySuccess('Thêm thông tin lương thành công');
+        } catch (error) {
+            notifyError('Không thể thêm thông tin lương');
+            console.error('Lỗi khi thêm lương:', error);
+        } finally {
+            setIsSubmitting(false);
         }
-        catch (error) {
-            notifyError('Error adding benefit');
+    };
+
+    const handleEndSalary = async (salaryId: number) => {
+        if (!confirm('Bạn có chắc chắn muốn kết thúc mức lương này?')) {
+            return;
         }
-        setIsAddingBenefit(false);
-        setAddBenefitForm(defaultAddBenefitForm);
-    }
+
+        try {
+            await put(`/api/employees/${employeeId}/salaries/${salaryId}/end`, JSON.stringify({
+                endDate: new Date().toISOString(),
+            }));
+
+            await mutate(`/api/employees/${employeeId}/salaries`);
+            notifySuccess('Kết thúc mức lương thành công');
+        } catch (error) {
+            notifyError('Không thể kết thúc mức lương');
+            console.error('Lỗi khi kết thúc lương:', error);
+        }
+    };
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+        }).format(amount);
+    };
 
     const formatDate = (dateString: string | null) => {
-        if (!dateString) return 'Present';
+        if (!dateString) return 'Hiện tại';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        return date.toLocaleDateString('vi-VN');
     };
+
+    if (isLoading) {
+        return <div className="p-4 text-center">Đang tải...</div>;
+    }
+
+    if (error) {
+        return <div className="p-4 text-center text-red-500">Không thể tải thông tin lương</div>;
+    }
 
     return (
         <div>
-            <Tabs value={activeTab} onChange={setActiveTab} className="mb-4">
-                <Tabs.List>
-                    <Tabs.Tab value="salary">Salary</Tabs.Tab>
-                    <Tabs.Tab value="benefits">Benefits</Tabs.Tab>
-                </Tabs.List>
-            </Tabs>
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Quản Lý Lương</h3>
+                {!isAdding && (
+                    <Button size="sm" onClick={() => setIsAdding(true)}>
+                        Thêm Mức Lương Mới
+                    </Button>
+                )}
+            </div>
 
-            {activeTab === 'salary' && (
-                <>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">Salary Management</h3>
-                        <div className='space-x-5'>
-                            <ActionButton
-                                kind="add"
-                                onClick={() => setIsAddingSalary(true)}
-                            />
-                        </div>
+            {isAdding && (
+                <div className="bg-gray-50 p-4 rounded-md mb-4">
+                    <h4 className="text-md font-medium mb-3">Thêm Mức Lương Mới</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <NumberInput
+                            label="Số Tiền"
+                            value={newSalary.amount}
+                            onChange={(value) => setNewSalary({ ...newSalary, amount: value as number })}
+                            required
+                            min={0}
+                            step={100000}
+                            thousandSeparator=","
+                        />
+                        <DateInput
+                            label="Ngày Hiệu Lực"
+                            value={newSalary.effectiveDate ? new Date(newSalary.effectiveDate) : null}
+                            onChange={(date) => setNewSalary({ ...newSalary, effectiveDate: date ? date.toString() : new Date().toISOString() })}
+                            required
+                        />
+                        <Select
+                            label="Loại Lương"
+                            data={[
+                                { value: 'Lương cơ bản', label: 'Lương cơ bản' },
+                                { value: 'Lương thưởng', label: 'Lương thưởng' },
+                                { value: 'Phụ cấp', label: 'Phụ cấp' },
+                            ]}
+                            value={newSalary.type}
+                            onChange={(value) => setNewSalary({ ...newSalary, type: value || 'Lương cơ bản' })}
+                            required
+                        />
+                        <TextInput
+                            label="Ghi Chú"
+                            value={newSalary.note}
+                            onChange={(e) => setNewSalary({ ...newSalary, note: e.target.value })}
+                            placeholder="Thêm ghi chú (không bắt buộc)"
+                        />
                     </div>
-
-                    {isAddingSalary && (
-                        <div className='flex flex-row gap-5 items-center bg-blue-50 ps-5 pe-8 py-5 rounded-xl mb-6'>
-                            <DateInput
-                                label="Payment Date"
-                                placeholder="Select date"
-                                onChange={(value) => setAddSalaryForm({ ...addSalaryForm, paymentDate: value || '' })}
-                                required
-                            />
-
-                            <NumberInput
-                                label="Salary Coefficient"
-                                onChange={(value) => setAddSalaryForm({ ...addSalaryForm, salaryCoefficient: value })}
-                                placeholder="Enter salary coefficient"
-                                required
-                            />
-
-                            <ActionButton className='mt-2 ml-auto' kind='cancel' onClick={() => setIsAddingSalary(false)} />
-                            <ActionButton className='mt-2' kind='check' onClick={handleAddSalary} />
-                        </div>
-                    )}
-
-                    {(!employeeSalaries || employeeSalaries.length === 0) ? (
-                        <div className="text-center py-4 text-gray-500">
-                            No salary records available
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            <Text size="sm" c="dimmed" className="mb-2">Salary History</Text>
-
-                            <Timeline active={employeeSalaries.length - 1} bulletSize={24} variant='' lineWidth={2} >
-                                {employeeSalaries.map((salary, index) => (
-                                    <Timeline.Item
-                                        key={salary.salaryId}
-                                        title={<Text fw={500}>{salary.paymentDate}</Text>}
-                                    >
-                                        <div className="bg-gray-50 rounded-md mt-2">
-                                            <Text size="sm" c="dimmed" className="mb-1">Salary Coefficient</Text>
-                                            <div className="flex items-center gap-5">
-                                                <>
-                                                    <Badge size="lg" color="blue" variant="light">
-                                                        {salary.salaryCoefficient.toFixed(2)}
-                                                    </Badge>
-                                                    <div className="flex-grow"></div>
-                                                </>
-                                            </div>
-                                        </div>
-                                    </Timeline.Item>
-                                ))}
-                            </Timeline>
-                        </div>
-                    )}
-                </>
+                    <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsAdding(false)} disabled={isSubmitting}>
+                            Hủy
+                        </Button>
+                        <Button onClick={handleAddSalary} loading={isSubmitting}>
+                            Lưu
+                        </Button>
+                    </div>
+                </div>
             )}
 
-            {activeTab === 'benefits' && (
-                <>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold">Benefit Management</h3>
-                        <div className='space-x-5'>
-                            {benefitError &&
-                                <ActionButton
-                                    kind="add"
-                                    onClick={() => setIsAddingBenefit(true)}
-                                />
-                            }
-                        </div>
-                    </div>
-
-                    {isAddingBenefit && (
-                        <div className='flex flex-col gap-5 bg-blue-50 ps-5 pe-8 py-5 rounded-xl mb-6'>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Select
-                                    label="Insurance"
-                                    placeholder="Select insurance"
-                                    data={insurances?.map(insurance => ({
-                                        value: insurance.insuranceId.toString(),
-                                        label: `${insurance.insuranceName} (${insurance.insuranceCoefficient.toFixed(2)})`
-                                    })) || []}
-                                    onChange={(value) => {
-                                        const selectedInsurance = insurances?.find(i => i.insuranceId.toString() === value);
-                                        setAddBenefitForm({
-                                            ...addBenefitForm,
-                                            insuranceId: value || '',
-                                        });
-                                    }}
-                                    searchable
-                                    required
-                                />
-
-                                <Select
-                                    label="Allowance"
-                                    placeholder="Select allowance"
-                                    data={allowances?.map(allowance => ({
-                                        value: allowance.allowanceId.toString(),
-                                        label: `${allowance.allowanceName} (${allowance.allowanceCoefficient.toFixed(2)})`
-                                    })) || []}
-                                    onChange={(value) => {
-                                        setAddBenefitForm({
-                                            ...addBenefitForm,
-                                            allowanceId: value || '',
-                                        });
-                                    }}
-                                    searchable
-                                    required
-                                />
-                            </div>
-
-                            <div className="flex justify-end gap-2 mt-2">
-                                <ActionButton kind='cancel' onClick={() => setIsAddingBenefit(false)} />
-                                <ActionButton kind='check' onClick={handleAddBenefit} />
-                            </div>
-                        </div>
+            {salaries && salaries.length > 0 ? (
+                <Table>
+                    <Table.Thead>
+                        <Table.Tr>
+                            <Table.Th>Số Tiền</Table.Th>
+                            <Table.Th>Loại</Table.Th>
+                            <Table.Th>Ngày Hiệu Lực</Table.Th>
+                            <Table.Th>Ngày Kết Thúc</Table.Th>
+                            <Table.Th>Ghi Chú</Table.Th>
+                            <Table.Th>Thao Tác</Table.Th>
+                        </Table.Tr>
+                    </Table.Thead>
+                    <Table.Tbody>
+                        {salaries.map((salary) => (
+                            <Table.Tr key={salary.salaryId}>
+                                <Table.Td>{formatCurrency(salary.amount)}</Table.Td>
+                                <Table.Td>{salary.type}</Table.Td>
+                                <Table.Td>{formatDate(salary.effectiveDate)}</Table.Td>
+                                <Table.Td>{formatDate(salary.endDate)}</Table.Td>
+                                <Table.Td>{salary.note}</Table.Td>
+                                <Table.Td>
+                                    {!salary.endDate && (
+                                        <Button
+                                            size="xs"
+                                            variant="outline"
+                                            color="red"
+                                            onClick={() => handleEndSalary(salary.salaryId)}
+                                        >
+                                            Kết Thúc
+                                        </Button>
+                                    )}
+                                </Table.Td>
+                            </Table.Tr>
+                        ))}
+                    </Table.Tbody>
+                </Table>
+            ) : (
+                <div className="text-center py-6 bg-gray-50 rounded-md">
+                    <p className="text-gray-500">Chưa có thông tin lương</p>
+                    {!isAdding && (
+                        <Button size="xs" variant="outline" onClick={() => setIsAdding(true)} className="mt-2">
+                            Thêm Mức Lương
+                        </Button>
                     )}
-
-                    {(!employeeBenefits || employeeBenefits.length === 0) ? (
-                        <div className="text-center py-4 text-gray-500">
-                            No benefit records available
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            <Text size="sm" c="dimmed" className="mb-2">Benefit Records</Text>
-
-                            <Table striped highlightOnHover>
-                                <Table.Thead>
-                                    <Table.Tr>
-                                        <Table.Th>Insurance Name</Table.Th>
-                                        <Table.Th>Insurance Coefficient</Table.Th>
-                                        <Table.Th>Allowance Name</Table.Th>
-                                        <Table.Th>Allowance Coefficient</Table.Th>
-                                    </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {employeeBenefits.map((benefit) => (
-                                        <Table.Tr key={benefit.employeeId}>
-                                            <Table.Td>{benefit.insuranceName}</Table.Td>
-                                            <Table.Td>
-                                                <Badge size="sm" color="blue" variant="light">
-                                                    {benefit.insuranceCoefficient.toFixed(2)}
-                                                </Badge>
-                                            </Table.Td>
-                                            <Table.Td>{benefit.allowanceName}</Table.Td>
-                                            <Table.Td>
-                                                <Badge size="sm" color="green" variant="light">
-                                                    {benefit.allowanceCoefficient.toFixed(2)}
-                                                </Badge>
-                                            </Table.Td>
-                                        </Table.Tr>
-                                    ))}
-                                </Table.Tbody>
-                            </Table>
-                        </div>
-                    )}
-                </>
+                </div>
             )}
         </div>
     );

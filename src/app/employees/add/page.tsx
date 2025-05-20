@@ -1,194 +1,179 @@
-'use client';
+'use client'
 
 import MainLayout from '@/components/layout/MainLayout';
-import { fetcher, post } from '@/util/api';
+import { post } from '@/util/api';
 import { countryCallingCodes } from '@/util/dataset';
-import { notifyError } from '@/util/toast-util';
+import { notifyError, notifySuccess } from '@/util/toast-util';
 import { Autocomplete, Button, Select, TextInput } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { useForm } from '@mantine/form';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import useSWR from 'swr';
 
 export default function AddEmployeePage() {
     const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Fetch provinces and wards data
-    const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
-    const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
-    const { data: departments } = useSWR<{ departmentId: number; name: string }[]>('/api/departments', fetcher);
-    const { data: positions } = useSWR<{ positionId: number; name: string }[]>('/api/positions', fetcher);
+    // Form state
+    const [form, setForm] = useState({
+        fullName: '',
+        email: '',
+        phone: '',
+        dob: '',
+        gender: '',
+        provinceId: '',
+        wardId: '',
+        departmentId: '',
+        positionId: '',
+    });
+
+    // Fetch data for dropdowns
+    const { data: provinces } = useSWR('/api/provinces');
+    const { data: wards } = useSWR('/api/wards');
+    const { data: departments } = useSWR('/api/departments');
+    const { data: positions } = useSWR('/api/positions');
 
     // Transform data for select components
-    const provinceOptions = provinces?.map(p => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
-    const wardOptions = wards?.map(w => ({ value: w.wardId.toString(), label: w.wardName })) || [];
-    const departmentOptions = departments?.map(d => ({ value: d.departmentId.toString(), label: d.name })) || [];
-    const positionOptions = positions?.map(p => ({ value: p.positionId.toString(), label: p.name })) || [];
+    const provinceOptions = provinces?.map((p: any) => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
+    const wardOptions = wards?.map((w: any) => ({ value: w.wardId.toString(), label: w.wardName })) || [];
+    const departmentOptions = departments?.map((d: any) => ({ value: d.departmentId.toString(), label: d.name })) || [];
+    const positionOptions = positions?.map((p: any) => ({ value: p.positionId.toString(), label: p.name })) || [];
 
-    const form = useForm({
-        initialValues: {
-            fullName: '',
-            dateOfBirth: null,
-            gender: '',
-            provinceId: '',
-            wardId: '',
-            email: '',
-            phone: '',
-            department: '',
-            position: '',
-        },
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-        validate: {
-            fullName: (value) => (value.length < 2 ? 'Name must have at least 2 letters' : null),
-            email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-            phone: (value) => (/^\(\+\d{1,3}\) \d+(-\d+)*$/.test(value) ? null : 'Invalid phone number format (+XX) XXXX...'),
-            department: (value) => (!value ? 'Please select a department' : null),
-            gender: (value) => (!value ? 'Please select a gender' : null),
-            dateOfBirth: (value) => (!value ? 'Please select a date of birth' : null),
-            provinceId: (value) => (!value ? 'Province is required' : null),
-            wardId: (value) => (!value ? 'Ward is required' : null),
-        },
-    });
+        // Validate form
+        if (!form.fullName || !form.email || !form.phone || !form.dob || !form.gender ||
+            !form.provinceId || !form.wardId || !form.departmentId || !form.positionId) {
+            notifyError('Vui lòng điền đầy đủ thông tin');
+            return;
+        }
 
-    const handleSubmit = form.onSubmit(async (values) => {
+        setIsSubmitting(true);
+
         try {
-            await post('/api/employees', JSON.stringify(values));
+            const response = await post('/api/employees', JSON.stringify(form));
+            notifySuccess('Thêm nhân viên thành công');
             router.push('/');
         } catch (error) {
-            notifyError('Failed to add employee');
+            console.error('Lỗi khi thêm nhân viên:', error);
+            notifyError('Không thể thêm nhân viên. Vui lòng thử lại sau.');
+        } finally {
+            setIsSubmitting(false);
         }
-    });
+    };
 
     return (
         <MainLayout activePath="/">
-            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <Link
-                        href="/"
-                        className="text-gray-500 hover:text-gray-700"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="m15 18-6-6 6-6" />
-                        </svg>
-                    </Link>
-                    <h1 className="text-2xl font-bold">Add New Employee</h1>
-                </div>
+            <div className="mb-6">
+                <h1 className="text-2xl font-bold">Thêm Nhân Viên Mới</h1>
+                <p className="text-gray-700">Điền thông tin để thêm nhân viên mới</p>
             </div>
 
-            <div className="p-6">
-                <form onSubmit={handleSubmit}>
+            <div className="bg-white rounded-lg shadow-sm p-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="md:col-span-2">
-                            <TextInput
-                                label="Full Name"
-                                placeholder="Enter full name (e.g., John Smith)"
-                                description="Enter employee complete name as it appears on official documents"
-                                {...form.getInputProps('fullName')}
-                                required
-                            />
-                        </div>
+                        <TextInput
+                            label="Họ và Tên"
+                            placeholder="Nhập họ và tên đầy đủ"
+                            value={form.fullName}
+                            onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                            required
+                        />
 
-                        <div>
-                            <DateInput
-                                label="Date of Birth"
-                                placeholder="Select date"
-                                description="Must be at least 18 years old"
-                                {...form.getInputProps('dateOfBirth')}
-                                required
-                            />
-                        </div>
+                        <DateInput
+                            label="Ngày Sinh"
+                            placeholder="Chọn ngày sinh"
+                            value={form.dob ? new Date(form.dob) : null}
+                            onChange={(date) => setForm({ ...form, dob: date ? date.toISOString() : '' })}
+                            required
+                        />
 
-                        <div>
-                            <Select
-                                label="Gender"
-                                description="Select employee gender"
-                                placeholder="Select gender"
-                                data={[
-                                    { value: 'Male', label: 'Male' },
-                                    { value: 'Female', label: 'Female' },
-                                ]}
-                                {...form.getInputProps('gender')}
-                                required
-                            />
-                        </div>
+                        <Select
+                            label="Giới Tính"
+                            placeholder="Chọn giới tính"
+                            data={[
+                                { value: 'Nam', label: 'Nam' },
+                                { value: 'Nữ', label: 'Nữ' },
+                            ]}
+                            value={form.gender}
+                            onChange={(value) => setForm({ ...form, gender: value || '' })}
+                            required
+                        />
 
-                        <div className="md:col-span-2">
-                            <div className="text-sm font-medium mb-2">Address</div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <Select
-                                    label="Province"
-                                    placeholder="Select province"
-                                    data={provinceOptions}
-                                    searchable
-                                    nothingFoundMessage="No provinces found"
-                                    {...form.getInputProps('provinceId')}
-                                    required
-                                />
+                        <TextInput
+                            label="Email"
+                            placeholder="Nhập địa chỉ email"
+                            type="email"
+                            value={form.email}
+                            onChange={(e) => setForm({ ...form, email: e.target.value })}
+                            required
+                        />
 
-                                <Select
-                                    label="Ward"
-                                    placeholder="Select ward"
-                                    data={wardOptions}
-                                    searchable
-                                    nothingFoundMessage="No wards found"
-                                    {...form.getInputProps('wardId')}
-                                    required
-                                />
-                            </div>
-                        </div>
+                        <Autocomplete
+                            label="Số Điện Thoại"
+                            placeholder="Nhập số điện thoại"
+                            data={countryCallingCodes}
+                            value={form.phone}
+                            onChange={(value) => setForm({ ...form, phone: value })}
+                            required
+                        />
 
-                        <div>
-                            <TextInput
-                                label="Email"
-                                placeholder="Enter work email"
-                                description="Use employee professional email address"
-                                type="email"
-                                {...form.getInputProps('email')}
-                                required
-                            />
-                        </div>
+                        <Select
+                            label="Tỉnh/Thành Phố"
+                            placeholder="Chọn tỉnh/thành phố"
+                            data={provinceOptions}
+                            value={form.provinceId}
+                            onChange={(value) => setForm({ ...form, provinceId: value || '' })}
+                            searchable
+                            required
+                        />
 
-                        <div>
-                            <Autocomplete
-                                label="Phone"
-                                limit={5}
-                                data={countryCallingCodes}
-                                placeholder="(+XX) XXX-XXXX"
-                                description="Enter phone number in international format"
-                                {...form.getInputProps('phone')}
-                                required
-                            />
-                        </div>
+                        <Select
+                            label="Quận/Huyện"
+                            placeholder="Chọn quận/huyện"
+                            data={wardOptions}
+                            value={form.wardId}
+                            onChange={(value) => setForm({ ...form, wardId: value || '' })}
+                            searchable
+                            required
+                        />
 
-                        <div className="md:col-span-2">
-                            <Select
-                                label="Department"
-                                placeholder="Select department"
-                                description="Choose the department"
-                                data={departmentOptions}
-                                {...form.getInputProps('department')}
-                                required
-                            />
-                        </div>
+                        <Select
+                            label="Phòng Ban"
+                            placeholder="Chọn phòng ban"
+                            data={departmentOptions}
+                            value={form.departmentId}
+                            onChange={(value) => setForm({ ...form, departmentId: value || '' })}
+                            searchable
+                            required
+                        />
 
-                        <div className="md:col-span-2">
-                            <Select
-                                label="Position"
-                                placeholder="Select position"
-                                description="Choose the position"
-                                data={positionOptions}
-                                {...form.getInputProps('position')}
-                                required
-                            />
-                        </div>
+                        <Select
+                            label="Chức Vụ"
+                            placeholder="Chọn chức vụ"
+                            data={positionOptions}
+                            value={form.positionId}
+                            onChange={(value) => setForm({ ...form, positionId: value || '' })}
+                            searchable
+                            required
+                        />
+                    </div>
 
-                        <div className="md:col-span-2 flex justify-end gap-4">
-                            <Link href="/employees">
-                                <Button variant="outline" color="gray">Cancel</Button>
-                            </Link>
-                            <button type="submit" className='bg-blue-600 px-4 py-2 rounded-md text-white hover:bg-blue-700 transition-colors'>Add Employee</button>
-                        </div>
+                    <div className="flex justify-end gap-4">
+                        <Button
+                            variant="outline"
+                            onClick={() => router.push('/')}
+                            disabled={isSubmitting}
+                        >
+                            Hủy
+                        </Button>
+                        <Button
+                            type="submit"
+                            loading={isSubmitting}
+                        >
+                            Thêm Nhân Viên
+                        </Button>
                     </div>
                 </form>
             </div>

@@ -11,42 +11,42 @@ import { useState } from 'react';
 const notificationsData = [
     {
         notificationId: 1,
-        content: 'Salary increases for Engineering department have been processed.',
+        content: 'Tăng lương cho bộ phận Kỹ thuật đã được xử lý.',
         notificationDate: '2023-06-15T09:30:00',
     },
     {
         notificationId: 2,
-        content: 'Sarah Johnson has joined the Marketing department.',
+        content: 'Sarah Johnson đã gia nhập bộ phận Marketing.',
         notificationDate: '2023-06-14T14:15:00',
     },
     {
         notificationId: 3,
-        content: 'HR department monthly meeting scheduled.',
+        content: 'Cuộc họp hàng tháng của bộ phận Nhân sự đã được lên lịch.',
         notificationDate: '2023-06-10T10:00:00',
     },
     {
         notificationId: 4,
-        content: 'Salary increases for Sales department have been processed.',
+        content: 'Tăng lương cho bộ phận Kinh doanh đã được xử lý.',
         notificationDate: '2023-03-15T11:30:00',
     },
     {
         notificationId: 5,
-        content: 'Remote work policy has been updated. Please review the changes.',
+        content: 'Chính sách làm việc từ xa đã được cập nhật. Vui lòng xem xét các thay đổi.',
         notificationDate: '2023-03-10T15:45:00',
     },
     {
         notificationId: 6,
-        content: 'Salary increases for Marketing department have been processed.',
+        content: 'Tăng lương cho bộ phận Marketing đã được xử lý.',
         notificationDate: '2022-12-15T10:15:00',
     },
     {
         notificationId: 7,
-        content: 'Office will be closed on December 25th and 26th for Christmas holidays.',
+        content: 'Văn phòng sẽ đóng cửa vào ngày 25 và 26 tháng 12 cho kỳ nghỉ lễ Giáng sinh.',
         notificationDate: '2022-12-01T09:00:00',
     },
     {
         notificationId: 8,
-        content: 'Salary increases for Engineering department have been processed.',
+        content: 'Tăng lương cho bộ phận Kỹ thuật đã được xử lý.',
         notificationDate: '2022-09-15T14:30:00',
     },
 ];
@@ -65,15 +65,15 @@ export default function NotificationsPage() {
             notificationDate: new Date(),
         },
         validate: {
-            content: (value) => (value.length < 5 ? 'Content must have at least 5 characters' : null),
-            notificationDate: (value) => (!value ? 'Date is required' : null),
+            content: (value) => (value.length < 5 ? 'Nội dung phải có ít nhất 5 ký tự' : null),
+            notificationDate: (value) => (!value ? 'Ngày là bắt buộc' : null),
         },
     });
 
     // Helper function to format dates
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
-        return new Intl.DateTimeFormat('en-US', {
+        return new Intl.DateTimeFormat('vi-VN', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -87,7 +87,7 @@ export default function NotificationsPage() {
 
         notifications.forEach(notification => {
             const date = new Date(notification.notificationDate);
-            const monthYear = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+            const monthYear = `${date.toLocaleString('vi-VN', { month: 'long' })} ${date.getFullYear()}`;
 
             if (!groups[monthYear]) {
                 groups[monthYear] = [];
@@ -114,8 +114,8 @@ export default function NotificationsPage() {
         <MainLayout activePath="/notifications">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Notifications</h1>
-                    <p className="text-gray-600">Sent</p>
+                    <h1 className="text-2xl font-bold">Thông Báo</h1>
+                    <p className="text-gray-600">Đã gửi</p>
                 </div>
 
                 <div>
@@ -124,7 +124,7 @@ export default function NotificationsPage() {
                         leftSection={<Plus size={16} />}
                         className="bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                        Add Notification
+                        Thêm Thông Báo
                     </Button>
                 </div>
             </div>
@@ -160,7 +160,7 @@ export default function NotificationsPage() {
             </div>
 
             {/* Add Notification Modal */}
-            <Modal opened={opened} onClose={close} title="Add New Notification" centered>
+            <Modal opened={opened} onClose={close} title="Thêm Thông Báo Mới" centered>
                 <form onSubmit={form.onSubmit((values) => {
                     // In a real app, this would be an API call
                     // await post('/api/notifications', JSON.stringify(values));
@@ -180,24 +180,24 @@ export default function NotificationsPage() {
                 })}>
                     <div className="space-y-4">
                         <TextInput
-                            label="Content"
-                            placeholder="Enter notification content"
-                            description="Describe the notification in detail"
+                            label="Nội dung"
+                            placeholder="Nhập nội dung thông báo"
+                            description="Mô tả chi tiết thông báo"
                             {...form.getInputProps('content')}
                             required
                         />
 
                         <DateTimePicker
-                            label="Date and Time"
-                            placeholder="Select date and time"
-                            description="When should this notification be dated"
+                            label="Ngày và Giờ"
+                            placeholder="Chọn ngày và giờ"
+                            description="Khi nào thông báo này được ghi ngày"
                             {...form.getInputProps('notificationDate')}
                             required
                         />
 
                         <div className="flex justify-end gap-4 mt-6">
-                            <Button variant="outline" color="gray" onClick={close}>Cancel</Button>
-                            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Add Notification</Button>
+                            <Button variant="outline" color="gray" onClick={close}>Hủy</Button>
+                            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Thêm Thông Báo</Button>
                         </div>
                     </div>
                 </form>

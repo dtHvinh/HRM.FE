@@ -61,8 +61,8 @@ export default function EmployeeDetailPage() {
             <MainLayout activePath="/">
                 <div className="bg-white rounded-lg shadow-sm p-6">
                     <div className="text-center text-red-600">
-                        <h2 className="text-xl font-semibold mb-2">Error</h2>
-                        <p>Failed to load employee details. Please try again later.</p>
+                        <h2 className="text-xl font-semibold mb-2">Lỗi</h2>
+                        <p>Không thể tải thông tin nhân viên. Vui lòng thử lại sau.</p>
                     </div>
                 </div>
             </MainLayout>
@@ -74,8 +74,8 @@ export default function EmployeeDetailPage() {
             <MainLayout activePath="/">
                 <div className="bg-white rounded-lg shadow-sm p-6">
                     <div className="text-center text-gray-600">
-                        <h2 className="text-xl font-semibold mb-2">Employee Not Found</h2>
-                        <p>The employee you're looking for doesn't exist or has been removed.</p>
+                        <h2 className="text-xl font-semibold mb-2">Không Tìm Thấy Nhân Viên</h2>
+                        <p>Nhân viên bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
                     </div>
                 </div>
             </MainLayout>
@@ -83,9 +83,9 @@ export default function EmployeeDetailPage() {
     }
 
     const formatDate = (dateString: string | null) => {
-        if (!dateString) return 'Present';
+        if (!dateString) return 'Hiện tại';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
+        return date.toLocaleDateString('vi-VN', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -104,7 +104,7 @@ export default function EmployeeDetailPage() {
                             <path d="m15 18-6-6 6-6" />
                         </svg>
                     </Link>
-                    <h1 className="text-2xl font-bold">Employee Details</h1>
+                    <h1 className="text-2xl font-bold">Thông Tin Nhân Viên</h1>
                 </div>
             </div>
 
@@ -122,32 +122,32 @@ export default function EmployeeDetailPage() {
                             </Badge>
                         </div>
 
-                        <Divider label="Personal Information" labelPosition="center" className="my-4" />
+                        <Divider label="Thông Tin Cá Nhân" labelPosition="center" className="my-4" />
 
                         <div className="space-y-4">
                             <div>
-                                <Text size="sm" c="dimmed">Date of Birth</Text>
+                                <Text size="sm" c="dimmed">Ngày Sinh</Text>
                                 <Text>{formatDate(employee.dob)}</Text>
                             </div>
 
                             <div>
-                                <Text size="sm" c="dimmed">Gender</Text>
-                                <Text>{employee.gender}</Text>
+                                <Text size="sm" c="dimmed">Giới Tính</Text>
+                                <Text>{employee.gender === 'Male' ? 'Nam' : employee.gender === 'Female' ? 'Nữ' : employee.gender}</Text>
                             </div>
 
                             <div>
-                                <Text size="sm" c="dimmed">Location</Text>
+                                <Text size="sm" c="dimmed">Địa Chỉ</Text>
                                 <Text>{employee.ward}, {employee.province}</Text>
                             </div>
                         </div>
                     </Card>
 
                     <Card padding="lg" radius="md" className="mb-6">
-                        <h3 className="text-lg font-semibold mb-4">Contact Information</h3>
+                        <h3 className="text-lg font-semibold mb-4">Thông Tin Liên Hệ</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <Text size="sm" c="dimmed">Email Address</Text>
+                                <Text size="sm" c="dimmed">Địa Chỉ Email</Text>
                                 <div className="flex items-center mt-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                                         <rect width="20" height="16" x="2" y="4" rx="2" />
@@ -158,7 +158,7 @@ export default function EmployeeDetailPage() {
                             </div>
 
                             <div>
-                                <Text size="sm" c="dimmed">Phone Number</Text>
+                                <Text size="sm" c="dimmed">Số Điện Thoại</Text>
                                 <div className="flex items-center mt-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
@@ -180,11 +180,11 @@ export default function EmployeeDetailPage() {
 
                     <div className='max-h-96 overflow-y-auto'>
                         <Card className='border-t-2 border-gray-200'>
-                            <h3 className="text-lg font-semibold mb-4">Department History</h3>
+                            <h3 className="text-lg font-semibold mb-4">Lịch Sử Phòng Ban</h3>
 
                             {employee.departments.length === 0 ? (
                                 <div className="text-center py-4 text-gray-500">
-                                    Not assigned to any departments
+                                    Chưa được phân công vào phòng ban nào
                                 </div>
                             ) : (
                                 <Timeline active={employee.departments.length - 1} bulletSize={24} lineWidth={2}>
@@ -198,36 +198,23 @@ export default function EmployeeDetailPage() {
                                             }
                                         >
                                             <div className="bg-gray-50 p-4 rounded-md mt-2">
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
-                                                        <Text size="sm" c="dimmed">Transfer Period</Text>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <Badge color={!department.transferOutDate ? "green" : "blue"} variant="light">
-                                                                {formatDate(department.transferInDate)} - {formatDate(department.transferOutDate)}
-                                                            </Badge>
-                                                            {!department.transferOutDate && (
-                                                                <Badge color="green">Current</Badge>
-                                                            )}
-                                                        </div>
+                                                        <Text size="sm" c="dimmed">Chức Vụ</Text>
+                                                        <Text>{department.position}</Text>
                                                     </div>
-
                                                     <div>
-                                                        <Text size="sm" c="dimmed">Position</Text>
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            {department.position}
-                                                        </div>
+                                                        <Text size="sm" c="dimmed">Ngày Bổ Nhiệm</Text>
+                                                        <Text>{formatDate(department.appointmentDate)}</Text>
                                                     </div>
-
-                                                    {department.appointmentDate && (
-                                                        <div>
-                                                            <Text size="sm" c="dimmed">Appointment Date</Text>
-                                                            <div className="mt-1">
-                                                                <Badge color="purple" variant="light">
-                                                                    {formatDate(department.appointmentDate)}
-                                                                </Badge>
-                                                            </div>
-                                                        </div>
-                                                    )}
+                                                    <div>
+                                                        <Text size="sm" c="dimmed">Ngày Chuyển Đến</Text>
+                                                        <Text>{formatDate(department.transferInDate)}</Text>
+                                                    </div>
+                                                    <div>
+                                                        <Text size="sm" c="dimmed">Ngày Chuyển Đi</Text>
+                                                        <Text>{formatDate(department.transferOutDate)}</Text>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </Timeline.Item>
