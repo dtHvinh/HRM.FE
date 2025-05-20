@@ -41,7 +41,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                 </svg>
             ),
-            label: 'Employees',
+            label: 'Nhân Viên',
         },
         {
             href: '/departments',
@@ -53,7 +53,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M13 11v2" />
                 </svg>
             ),
-            label: 'Departments',
+            label: 'Phòng Ban',
         },
         {
             href: '/benefits',
@@ -63,7 +63,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg>
             ),
-            label: 'Benefits',
+            label: 'Phúc Lợi',
         },
         {
             href: '/positions',
@@ -75,7 +75,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M12 3v3" />
                 </svg>
             ),
-            label: 'Positions',
+            label: 'Chức Vụ',
         },
         {
             href: '/notifications',
@@ -85,7 +85,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
                 </svg>
             ),
-            label: 'Notifications',
+            label: 'Thông Báo',
         },
         {
             href: '/accounts',
@@ -97,7 +97,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <circle cx="7" cy="7" r="3" />
                 </svg>
             ),
-            label: 'Accounts',
+            label: 'Tài Khoản',
         },
         {
             href: '/location',
@@ -107,7 +107,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
                 </svg>
             ),
-            label: 'Location',
+            label: 'Địa điểm',
         },
     ];
 
@@ -122,7 +122,7 @@ export default function Sidebar({ activePath = '/' }: SidebarProps) {
                     <path d="M14 17.75V21" />
                     <path d="M7 18a6 6 0 0 0 3.84-10.61" />
                 </svg>
-                <h1 className="text-xl font-bold">HRM System</h1>
+                <h1 className="text-xl font-bold">HRM</h1>
             </div>
             <nav className="space-y-1 text-black [&>*:nth-child(5)]:border-t-[1px] [&>*:nth-child(5)]:rounded-t-none">
                 {navItems.map((item) => (

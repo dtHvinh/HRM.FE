@@ -60,7 +60,7 @@ export default function AccountsPage() {
             setIsAddingNew(false);
         }
         catch {
-            notifyError('Failed to create account')
+            notifyError('Không thể tạo tài khoản')
         }
     };
 
@@ -131,8 +131,8 @@ export default function AccountsPage() {
         <MainLayout activePath="/accounts">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Accounts</h1>
-                    <p className="text-gray-600">Manage user accounts and permissions</p>
+                    <h1 className="text-2xl font-bold">Tài Khoản</h1>
+                    <p className="text-gray-600">Quản lý tài khoản người dùng và phân quyền</p>
                 </div>
                 <button
                     onClick={() => {
@@ -142,6 +142,7 @@ export default function AccountsPage() {
                     }}
                     className="text-black px-2 py-2 rounded-full hover:bg-gray-100"
                     disabled={isAddingNew || editingAccountId !== null}
+                    title="Thêm tài khoản"
                 >
                     <Plus />
                 </button>
@@ -149,11 +150,11 @@ export default function AccountsPage() {
 
             {isLoading ? (
                 <div className="bg-white rounded-lg shadow-sm p-6 flex justify-center items-center h-64">
-                    <p className="text-gray-500">Loading accounts...</p>
+                    <p className="text-gray-500">Đang tải danh sách tài khoản...</p>
                 </div>
             ) : error ? (
                 <div className="bg-white rounded-lg shadow-sm p-6 flex justify-center items-center h-64">
-                    <p className="text-red-500">Error loading accounts. Please try again.</p>
+                    <p className="text-red-500">Lỗi khi tải danh sách tài khoản. Vui lòng thử lại.</p>
                 </div>
             ) : (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -161,9 +162,9 @@ export default function AccountsPage() {
                         <table className="w-full">
                             <thead className="bg-gray-50 border-b border-gray-200">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên Đăng Nhập</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mật Khẩu</th>
+                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -176,7 +177,7 @@ export default function AccountsPage() {
                                                     name="password"
                                                     value={editFormData.password}
                                                     onChange={handleEditInputChange}
-                                                    placeholder="Enter new password"
+                                                    placeholder="Nhập mật khẩu mới"
                                                     type="password"
                                                     variant="filled"
                                                     required
@@ -197,14 +198,14 @@ export default function AccountsPage() {
                                                         onClick={handleSaveEdit}
                                                         disabled={!editFormData.password}
                                                         className="text-green-600 hover:text-green-900 mr-2 p-1 rounded-full hover:bg-green-100"
-                                                        title="Save"
+                                                        title="Lưu"
                                                     >
                                                         <Check size={18} />
                                                     </button>
                                                     <button
                                                         onClick={handleCancelEdit}
                                                         className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100"
-                                                        title="Cancel"
+                                                        title="Hủy"
                                                     >
                                                         <X size={18} />
                                                     </button>
@@ -216,14 +217,14 @@ export default function AccountsPage() {
                                                         className="text-blue-600 hover:text-blue-900 mr-4"
                                                         disabled={isAddingNew || editingAccountId !== null}
                                                     >
-                                                        Edit
+                                                        Sửa
                                                     </button>
                                                     <button
                                                         onClick={() => openDeleteModal(account)}
                                                         className="text-red-600 hover:text-red-900"
                                                         disabled={isAddingNew || editingAccountId !== null}
                                                     >
-                                                        Delete
+                                                        Xóa
                                                     </button>
                                                 </>
                                             )}
@@ -236,7 +237,7 @@ export default function AccountsPage() {
                                             <TextInput
                                                 value={newUsername}
                                                 onChange={(e) => setNewUsername(e.currentTarget.value)}
-                                                placeholder="Enter username"
+                                                placeholder="Nhập tên đăng nhập"
                                                 variant="filled"
                                                 required
                                                 autoFocus
@@ -246,7 +247,7 @@ export default function AccountsPage() {
                                             <TextInput
                                                 value={newPassword}
                                                 onChange={(e) => setNewPassword(e.currentTarget.value)}
-                                                placeholder="Enter password"
+                                                placeholder="Nhập mật khẩu"
                                                 type="password"
                                                 variant="filled"
                                                 required
@@ -257,14 +258,14 @@ export default function AccountsPage() {
                                                 onClick={handleCreateAccount}
                                                 disabled={!newUsername || !newPassword}
                                                 className="text-green-600 hover:text-green-900 mr-2 p-1 rounded-full hover:bg-green-100"
-                                                title="Create"
+                                                title="Tạo"
                                             >
                                                 <Check size={18} />
                                             </button>
                                             <button
                                                 onClick={handleCancelAdd}
                                                 className="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-100"
-                                                title="Cancel"
+                                                title="Hủy"
                                             >
                                                 <X size={18} />
                                             </button>
@@ -282,19 +283,19 @@ export default function AccountsPage() {
                 {showDeleteModal && (
                     <div className="modal-content">
                         <div className="p-2">
-                            <p className="mb-4">Are you sure you want to delete the account <strong>{selectedAccount?.username}</strong>? This action cannot be undone.</p>
+                            <p className="mb-4">Bạn có chắc chắn muốn xóa tài khoản <strong>{selectedAccount?.username}</strong>? Hành động này không thể hoàn tác.</p>
                             <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     onClick={() => setShowDeleteModal(false)}
                                     className="px-4 py-2 text-gray-600 hover:text-gray-800"
                                 >
-                                    Cancel
+                                    Hủy
                                 </button>
                                 <button
                                     onClick={handleDeleteAccount}
                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                                 >
-                                    Delete
+                                    Xóa
                                 </button>
                             </div>
                         </div>

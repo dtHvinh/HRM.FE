@@ -27,7 +27,7 @@ export default function PositionsPage() {
             setNewPositionName('');
             setIsAddingPosition(false);
         } catch (error) {
-            notifyError('Failed to add position');
+            notifyError('Không thể thêm chức vụ');
         }
     };
 
@@ -38,20 +38,20 @@ export default function PositionsPage() {
             setEditingPositionId(null);
             setEditPositionName('');
         } catch (error) {
-            notifyError('Failed to edit position');
+            notifyError('Không thể chỉnh sửa chức vụ');
         }
     };
 
     const handleAskDeletePosition = (positionName: string, id: number) => {
         modals.openConfirmModal({
-            title: 'Warning',
+            title: 'Cảnh báo',
             centered: true,
             children: (
                 <Text size='sm'>
-                    Are you sure you want to delete "{positionName}"?
+                    Bạn có chắc chắn muốn xóa chức vụ "{positionName}"?
                 </Text>
             ),
-            labels: { confirm: `Delete "${positionName}"`, cancel: "No don't delete it" },
+            labels: { confirm: `Xóa "${positionName}"`, cancel: "Không, đừng xóa" },
             confirmProps: { color: 'red' },
             onConfirm: () => handleDeletePosition(id),
         });
@@ -62,44 +62,39 @@ export default function PositionsPage() {
             await del(`/api/positions/${id}`);
             mutate('/api/positions');
         } catch (error) {
-            notifyError('Failed to delete position');
+            notifyError('Không thể xóa chức vụ');
         }
-    };
-
-    const startEditingPosition = (position: { positionId: number; name: string }) => {
-        setEditingPositionId(position.positionId);
-        setEditPositionName(position.name);
     };
 
     return (
         <MainLayout activePath="/positions">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold">Positions</h1>
-                <p className="text-gray-600">Manage job positions in your company</p>
+                <h1 className="text-2xl font-bold">Chức Vụ</h1>
+                <p className="text-gray-600">Quản lý chức vụ trong công ty của bạn</p>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="p-0 relative min-h-[200px] [&_button]:cursor-pointer">
                     <LoadingOverlay visible={positionsLoading} />
                     <div className="flex items-center justify-between px-6 pt-6 pb-2">
-                        <h2 className="text-lg font-semibold">Positions</h2>
+                        <h2 className="text-lg font-semibold">Chức Vụ</h2>
                         <button
                             onClick={() => setIsAddingPosition(true)}
                             className="p-2 hover:text-gray-800 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-                            title="Add Position"
+                            title="Thêm Chức Vụ"
                             disabled={isAddingPosition}
                         >
                             <Plus size={20} />
                         </button>
                     </div>
                     {positionsError ? (
-                        <div className="p-6 text-center text-red-600">Error loading positions</div>
+                        <div className="p-6 text-center text-red-600">Lỗi khi tải danh sách chức vụ</div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
@@ -110,6 +105,7 @@ export default function PositionsPage() {
                                                 <TextInput
                                                     value={editPositionName}
                                                     onChange={(e) => setEditPositionName(e.currentTarget.value)}
+                                                    placeholder="Nhập tên chức vụ"
                                                     autoFocus
                                                 />
                                             ) : (
@@ -127,7 +123,7 @@ export default function PositionsPage() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <ActionButton kind="edit" onClick={() => startEditingPosition(position)} />
+                                                    <ActionButton kind="edit" onClick={() => setEditingPositionId(position.positionId)} />
                                                     <ActionButton kind="delete" onClick={() => handleAskDeletePosition(position.name, position.positionId)} />
                                                 </>
                                             )}
@@ -140,7 +136,7 @@ export default function PositionsPage() {
                                             <TextInput
                                                 value={newPositionName}
                                                 onChange={(e) => setNewPositionName(e.currentTarget.value)}
-                                                placeholder="Enter position name"
+                                                placeholder="Nhập tên chức vụ"
                                                 autoFocus
                                             />
                                         </td>

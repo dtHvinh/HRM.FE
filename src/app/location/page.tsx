@@ -34,7 +34,7 @@ export default function LocationPage() {
             setNewProvinceName('');
             setIsAddingProvince(false);
         } catch (error) {
-            notifyError('Failed to add province');
+            notifyError('Không thể thêm tỉnh/thành phố');
         }
     };
 
@@ -45,20 +45,20 @@ export default function LocationPage() {
             setEditingProvinceId(null);
             setEditProvinceName('');
         } catch (error) {
-            notifyError('Failed to edit province');
+            notifyError('Không thể chỉnh sửa tỉnh/thành phố');
         }
     };
 
     const handleAskDeleteProvince = (provinceName: string, id: number) => {
         modals.openConfirmModal({
-            title: 'Warning',
+            title: 'Cảnh báo',
             centered: true,
             children: (
                 <Text size='sm'>
-                    Are you sure you want to delete "{provinceName}"?
+                    Bạn có chắc chắn muốn xóa "{provinceName}"?
                 </Text>
             ),
-            labels: { confirm: `Delete "${provinceName}"`, cancel: "No don't delete it" },
+            labels: { confirm: `Xóa "${provinceName}"`, cancel: "Không, đừng xóa" },
             confirmProps: { color: 'red' },
             onConfirm: () => handleDeleteProvince(id),
         });
@@ -69,7 +69,7 @@ export default function LocationPage() {
             await del(`/api/provinces/${id}`);
             mutate('/api/provinces');
         } catch (error) {
-            notifyError('Failed to delete province');
+            notifyError('Không thể xóa tỉnh/thành phố');
         }
     };
 
@@ -81,7 +81,7 @@ export default function LocationPage() {
             setNewWardName('');
             setIsAddingWard(false);
         } catch (error) {
-            notifyError('Failed to add ward');
+            notifyError('Không thể thêm phường/xã');
         }
     };
 
@@ -92,20 +92,20 @@ export default function LocationPage() {
             setEditingWardId(null);
             setEditWardName('');
         } catch (error) {
-            notifyError('Failed to edit ward');
+            notifyError('Không thể chỉnh sửa phường/xã');
         }
     };
 
     const handleAskDeleteWard = (wardName: string, id: number) => {
         modals.openConfirmModal({
-            title: 'Warning',
+            title: 'Cảnh báo',
             centered: true,
             children: (
                 <Text size='sm'>
-                    Are you sure you want to delete "{wardName}"?
+                    Bạn có chắc chắn muốn xóa "{wardName}"?
                 </Text>
             ),
-            labels: { confirm: `Delete "${wardName}"`, cancel: "No don't delete it" },
+            labels: { confirm: `Xóa "${wardName}"`, cancel: "Không, đừng xóa" },
             confirmProps: { color: 'red' },
             onConfirm: () => handleDeleteWard(id),
         });
@@ -116,7 +116,7 @@ export default function LocationPage() {
             await del(`/api/wards/${id}`);
             mutate('/api/wards');
         } catch (error) {
-            notifyError('Failed to delete ward');
+            notifyError('Không thể xóa phường/xã');
         }
     };
 
@@ -133,8 +133,7 @@ export default function LocationPage() {
     return (
         <MainLayout activePath="/location">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold">Location Management</h1>
-                <p className="text-gray-600">Manage Provinces and Wards</p>
+                <h1 className="text-2xl font-bold">Quản Lý Địa Điểm</h1>
             </div>
 
             <div className="flex flex-col md:grid md:grid-cols-2 gap-8">
@@ -142,23 +141,23 @@ export default function LocationPage() {
                 <div className="p-0 mb-8 md:mb-0 relative min-h-[200px]">
                     <LoadingOverlay visible={provincesLoading} />
                     <div className="flex items-center justify-between px-6 pt-6 pb-2">
-                        <h2 className="text-lg font-semibold">Provinces</h2>
+                        <h2 className="text-lg font-semibold">Tỉnh</h2>
                         <button
                             onClick={() => setIsAddingProvince(true)}
                             className="p-2 hover:text-gray-800 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-                            title="Add Province"
+                            title="Thêm Tỉnh"
                             disabled={isAddingProvince}
                         >
                             <Plus size={20} />
                         </button>
                     </div>
                     {provincesError ? (
-                        <div className="p-6 text-center text-red-600">Error loading provinces</div>
+                        <div className="p-6 text-center text-red-600">Lỗi khi tải danh sách tỉnh/thành phố</div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
@@ -199,7 +198,7 @@ export default function LocationPage() {
                                             <TextInput
                                                 value={newProvinceName}
                                                 onChange={(e) => setNewProvinceName(e.currentTarget.value)}
-                                                placeholder="Enter province name"
+                                                placeholder="Nhập tên tỉnh/thành phố"
                                                 autoFocus
                                             />
                                         </td>
@@ -221,23 +220,23 @@ export default function LocationPage() {
                 <div className="p-0 relative">
                     <LoadingOverlay visible={wardsLoading} />
                     <div className="flex items-center justify-between px-6 pt-6 pb-2">
-                        <h2 className="text-lg font-semibold">Wards</h2>
+                        <h2 className="text-lg font-semibold">Thành phố</h2>
                         <button
                             onClick={() => setIsAddingWard(true)}
                             className="p-2 hover:text-gray-800 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-                            title="Add Ward"
+                            title="Thành phố"
                             disabled={isAddingWard}
                         >
                             <Plus size={20} />
                         </button>
                     </div>
                     {wardsError ? (
-                        <div className="p-6 text-center text-red-600">Error loading wards</div>
+                        <div className="p-6 text-center text-red-600">Lỗi khi tải danh sách phường/xã</div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
@@ -278,7 +277,7 @@ export default function LocationPage() {
                                             <TextInput
                                                 value={newWardName}
                                                 onChange={(e) => setNewWardName(e.currentTarget.value)}
-                                                placeholder="Enter ward name"
+                                                placeholder="Nhập tên phường/xã"
                                                 autoFocus
                                             />
                                         </td>

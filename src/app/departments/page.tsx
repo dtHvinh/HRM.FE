@@ -48,14 +48,14 @@ export default function DepartmentsPage() {
 
     const handleAskDeleteDepartment = (departmentName: string, id: number) => {
         modals.openConfirmModal({
-            title: 'Warning',
+            title: 'Cảnh báo',
             centered: true,
             children: (
                 <Text size='sm'>
-                    Are you sure you want to delete "{departmentName}"?
+                    Bạn có chắc chắn muốn xóa "{departmentName}"?
                 </Text>
             ),
-            labels: { confirm: `Delete "${departmentName}"`, cancel: "No don't delete it" },
+            labels: { confirm: `Xóa "${departmentName}"`, cancel: "Không, đừng xóa" },
             confirmProps: { color: 'red' },
             onConfirm: () => handleDeleteDepartment(id),
         });
@@ -78,32 +78,32 @@ export default function DepartmentsPage() {
     return (
         <MainLayout activePath="/departments">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold">Departments</h1>
-                <p className="text-gray-600">Manage your company departments</p>
+                <h1 className="text-2xl font-bold">Phòng Ban</h1>
+                <p className="text-gray-600">Quản lý phòng ban trong công ty của bạn</p>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div className="p-0 relative min-h-[200px] [&_button]:cursor-pointer">
                     <LoadingOverlay visible={departmentsLoading} />
                     <div className="flex items-center justify-between px-6 pt-6 pb-2">
-                        <h2 className="text-lg font-semibold">Departments</h2>
+                        <h2 className="text-lg font-semibold">Phòng Ban</h2>
                         <button
                             onClick={() => setIsAddingDepartment(true)}
                             className="p-2 hover:text-gray-800 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
-                            title="Add Department"
+                            title="Thêm Phòng Ban"
                             disabled={isAddingDepartment}
                         >
                             <Plus size={20} />
                         </button>
                     </div>
                     {departmentsError ? (
-                        <div className="p-6 text-center text-red-600">Error loading departments</div>
+                        <div className="p-6 text-center text-red-600">Lỗi khi tải danh sách phòng ban</div>
                     ) : (
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tên</th>
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao Tác</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
@@ -114,6 +114,7 @@ export default function DepartmentsPage() {
                                                 <TextInput
                                                     value={editDepartmentName}
                                                     onChange={(e) => setEditDepartmentName(e.currentTarget.value)}
+                                                    placeholder="Nhập tên phòng ban"
                                                     autoFocus
                                                 />
                                             ) : (
@@ -150,7 +151,7 @@ export default function DepartmentsPage() {
                                             <TextInput
                                                 value={newDeptName}
                                                 onChange={(e) => setNewDeptName(e.currentTarget.value)}
-                                                placeholder="Enter department name"
+                                                placeholder="Nhập tên phòng ban"
                                                 autoFocus
                                             />
                                         </td>

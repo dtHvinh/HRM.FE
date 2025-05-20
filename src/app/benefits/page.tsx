@@ -66,7 +66,7 @@ export default function BenefitsPage() {
     const handleOpenModal = (type: 'insurance' | 'allowance', action: 'add' | 'edit', item?: Insurance | Allowance) => {
         setActiveTab(type);
         setIsEditing(action === 'edit');
-        setModalTitle(`${action === 'add' ? 'Add' : 'Edit'} ${type === 'insurance' ? 'Insurance' : 'Allowance'}`);
+        setModalTitle(`${action === 'add' ? 'Thêm' : 'Sửa'} ${type === 'insurance' ? 'Bảo Hiểm' : 'Phụ Cấp'}`);
 
         if (action === 'edit' && item) {
             if (type === 'insurance') {
@@ -163,37 +163,37 @@ export default function BenefitsPage() {
         <MainLayout activePath="/benefits">
             <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Benefits Management</h1>
-                    <p className="text-gray-700">Manage insurance and allowance records</p>
+                    <h1 className="text-2xl font-bold">Quản Lý Phúc Lợi</h1>
+                    <p className="text-gray-700">Quản lý bảo hiểm và phụ cấp</p>
                 </div>
             </div>
 
             <div className="p-6">
                 <Tabs value={activeTab} onChange={setActiveTab} className="mb-4">
                     <Tabs.List>
-                        <Tabs.Tab value="insurance">Insurance</Tabs.Tab>
-                        <Tabs.Tab value="allowance">Allowance</Tabs.Tab>
+                        <Tabs.Tab value="insurance">Bảo Hiểm</Tabs.Tab>
+                        <Tabs.Tab value="allowance">Phụ Cấp</Tabs.Tab>
                     </Tabs.List>
                 </Tabs>
 
                 {activeTab === 'insurance' && (
                     <>
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Insurances</h2>
+                            <h2 className="text-lg font-semibold">Bảo Hiểm</h2>
                             <ActionButton kind='add' onClick={() => handleOpenModal('insurance', 'add')} />
                         </div>
 
                         {(!insurances || insurances.length === 0) ? (
                             <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-md">
-                                No insurance available
+                                Chưa có bảo hiểm nào
                             </div>
                         ) : (
                             <Table striped highlightOnHover>
                                 <Table.Thead>
                                     <Table.Tr>
-                                        <Table.Th>Insurance Name</Table.Th>
-                                        <Table.Th>Coefficient</Table.Th>
-                                        <Table.Th>Actions</Table.Th>
+                                        <Table.Th>Tên Bảo Hiểm</Table.Th>
+                                        <Table.Th>Hệ Số</Table.Th>
+                                        <Table.Th>Thao Tác</Table.Th>
                                     </Table.Tr>
                                 </Table.Thead>
                                 <Table.Tbody>
@@ -228,21 +228,21 @@ export default function BenefitsPage() {
                 {activeTab === 'allowance' && (
                     <>
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-lg font-semibold">Allowances</h2>
+                            <h2 className="text-lg font-semibold">Phụ Cấp</h2>
                             <ActionButton kind='add' onClick={() => handleOpenModal('allowance', 'add')} />
                         </div>
 
                         {(!allowances || allowances.length === 0) ? (
                             <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-md">
-                                No allowance available
+                                Chưa có phụ cấp nào
                             </div>
                         ) : (
                             <Table striped highlightOnHover>
                                 <Table.Thead>
                                     <Table.Tr>
-                                        <Table.Th>Allowance Name</Table.Th>
-                                        <Table.Th>Coefficient</Table.Th>
-                                        <Table.Th>Actions</Table.Th>
+                                        <Table.Th>Tên Phụ Cấp</Table.Th>
+                                        <Table.Th>Hệ Số</Table.Th>
+                                        <Table.Th>Thao Tác</Table.Th>
                                     </Table.Tr>
                                 </Table.Thead>
                                 <Table.Tbody>
@@ -280,16 +280,16 @@ export default function BenefitsPage() {
                 {activeTab === 'insurance' ? (
                     <div className="space-y-4">
                         <TextInput
-                            label="Insurance Name"
-                            placeholder="Enter insurance name"
+                            label="Tên Bảo Hiểm"
+                            placeholder="Nhập tên bảo hiểm"
                             value={insuranceForm.insuranceName}
                             onChange={(e) => setInsuranceForm({ ...insuranceForm, insuranceName: e.target.value })}
                             required
                         />
 
                         <NumberInput
-                            label="Insurance Coefficient"
-                            placeholder="Enter coefficient"
+                            label="Hệ Số Bảo Hiểm"
+                            placeholder="Nhập hệ số"
                             value={insuranceForm.insuranceCoefficient}
                             onChange={(value) => setInsuranceForm({ ...insuranceForm, insuranceCoefficient: value })}
                             required
@@ -297,23 +297,23 @@ export default function BenefitsPage() {
                         />
 
                         <div className="flex justify-end gap-2 mt-4">
-                            <Button variant="outline" onClick={close}>Cancel</Button>
-                            <Button onClick={handleInsuranceSubmit}>{isEditing ? 'Update' : 'Add'}</Button>
+                            <Button variant="outline" onClick={close}>Hủy</Button>
+                            <Button onClick={handleInsuranceSubmit}>{isEditing ? 'Cập Nhật' : 'Thêm'}</Button>
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         <TextInput
-                            label="Allowance Name"
-                            placeholder="Enter allowance name"
+                            label="Tên Phụ Cấp"
+                            placeholder="Nhập tên phụ cấp"
                             value={allowanceForm.allowanceName}
                             onChange={(e) => setAllowanceForm({ ...allowanceForm, allowanceName: e.target.value })}
                             required
                         />
 
                         <NumberInput
-                            label="Allowance Coefficient"
-                            placeholder="Enter coefficient"
+                            label="Hệ Số Phụ Cấp"
+                            placeholder="Nhập hệ số"
                             value={allowanceForm.allowanceCoefficient}
                             onChange={(value) => setAllowanceForm({ ...allowanceForm, allowanceCoefficient: value })}
                             required
@@ -321,21 +321,21 @@ export default function BenefitsPage() {
                         />
 
                         <div className="flex justify-end gap-2 mt-4">
-                            <Button variant="outline" onClick={close}>Cancel</Button>
-                            <Button onClick={handleAllowanceSubmit}>{isEditing ? 'Update' : 'Add'}</Button>
+                            <Button variant="outline" onClick={close}>Hủy</Button>
+                            <Button onClick={handleAllowanceSubmit}>{isEditing ? 'Cập Nhật' : 'Thêm'}</Button>
                         </div>
                     </div>
                 )}
             </Modal>
 
             {/* Delete Confirmation Modal */}
-            <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title="Confirm Deletion" centered>
+            <Modal opened={deleteModalOpened} onClose={closeDeleteModal} title="Xác Nhận Xóa" centered>
                 <div className="space-y-4">
-                    <p>Are you sure you want to delete this {activeTab}? This action cannot be undone.</p>
+                    <p>Bạn có chắc chắn muốn xóa {activeTab === 'insurance' ? 'bảo hiểm' : 'phụ cấp'} này? Hành động này không thể hoàn tác.</p>
 
                     <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="outline" onClick={closeDeleteModal}>Cancel</Button>
-                        <Button color="red" onClick={handleDelete}>Delete</Button>
+                        <Button variant="outline" onClick={closeDeleteModal}>Hủy</Button>
+                        <Button color="red" onClick={handleDelete}>Xóa</Button>
                     </div>
                 </div>
             </Modal>

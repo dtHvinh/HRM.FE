@@ -85,7 +85,7 @@ export default function AddEmployeePage() {
                             label="Ngày Sinh"
                             placeholder="Chọn ngày sinh"
                             value={form.dob ? new Date(form.dob) : null}
-                            onChange={(date) => setForm({ ...form, dob: date ? date.toISOString() : '' })}
+                            onChange={(date) => setForm({ ...form, dob: date ? date.toString() : '' })}
                             required
                         />
 
