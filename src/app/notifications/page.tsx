@@ -1,7 +1,12 @@
 'use client'
 
 import MainLayout from '@/components/layout/MainLayout';
+import { Button, Modal, TextInput } from '@mantine/core';
+import { DateTimePicker } from '@mantine/dates';
+import { useForm } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
 import { Plus } from 'lucide-react';
+import { useState } from 'react';
 
 const notificationsData = [
     {
@@ -47,8 +52,23 @@ const notificationsData = [
 ];
 
 export default function NotificationsPage() {
-    const notifications = notificationsData;
-    // const { data: notifications } = useSWR<{ notifycationId: number, content: string, notificationDate: string }[]>('/api/notifications', fetcher);
+    const [notifications, setNotifications] = useState(notificationsData);
+    // const { data: notifications, mutate } = useSWR<{ notificationId: number, content: string, notificationDate: string }[]>('/api/notifications', fetcher);
+
+    // Modal state
+    const [opened, { open, close }] = useDisclosure(false);
+
+    // Form for adding new notifications
+    const form = useForm({
+        initialValues: {
+            content: '',
+            notificationDate: new Date(),
+        },
+        validate: {
+            content: (value) => (value.length < 5 ? 'Content must have at least 5 characters' : null),
+            notificationDate: (value) => (!value ? 'Date is required' : null),
+        },
+    });
 
     // Helper function to format dates
     const formatDate = (dateString: string) => {
@@ -99,7 +119,13 @@ export default function NotificationsPage() {
                 </div>
 
                 <div>
-                    <Plus />
+                    <Button
+                        onClick={open}
+                        leftSection={<Plus size={16} />}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                        Add Notification
+                    </Button>
                 </div>
             </div>
 
@@ -132,6 +158,50 @@ export default function NotificationsPage() {
                     </div>
                 ))}
             </div>
+
+            {/* Add Notification Modal */}
+            <Modal opened={opened} onClose={close} title="Add New Notification" centered>
+                <form onSubmit={form.onSubmit((values) => {
+                    // In a real app, this would be an API call
+                    // await post('/api/notifications', JSON.stringify(values));
+
+                    // For demo purposes, we'll just add to the local state
+                    const newNotification = {
+                        notificationId: Math.max(0, ...notifications.map(n => n.notificationId)) + 1,
+                        content: values.content,
+                        notificationDate: values.notificationDate.toISOString(),
+                    };
+
+                    setNotifications([newNotification, ...notifications]);
+                    // In a real app with SWR: mutate();
+
+                    form.reset();
+                    close();
+                })}>
+                    <div className="space-y-4">
+                        <TextInput
+                            label="Content"
+                            placeholder="Enter notification content"
+                            description="Describe the notification in detail"
+                            {...form.getInputProps('content')}
+                            required
+                        />
+
+                        <DateTimePicker
+                            label="Date and Time"
+                            placeholder="Select date and time"
+                            description="When should this notification be dated"
+                            {...form.getInputProps('notificationDate')}
+                            required
+                        />
+
+                        <div className="flex justify-end gap-4 mt-6">
+                            <Button variant="outline" color="gray" onClick={close}>Cancel</Button>
+                            <Button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white">Add Notification</Button>
+                        </div>
+                    </div>
+                </form>
+            </Modal>
         </MainLayout>
     );
 }
