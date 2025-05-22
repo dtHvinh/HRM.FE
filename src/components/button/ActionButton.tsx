@@ -1,7 +1,9 @@
 import { Tooltip } from "@mantine/core";
-import { Check, Eye, Pen, Plus, Trash, X } from "lucide-react";
+import { Check, Eye, Pen, Plus, Search, Trash, X } from "lucide-react";
 
-export default function ActionButton({ kind, onClick, className }: { className?: string, kind: 'edit' | 'delete' | 'add' | 'check' | 'cancel', onClick: () => void }) {
+export default function ActionButton({ kind, onClick, className }: {
+    className?: string, kind: 'edit' | 'delete' | 'add' | 'check' | 'cancel' | 'search', onClick: () => void
+}) {
     const getIcon = (kind: string) => {
         switch (kind) {
             case "edit":
@@ -16,6 +18,8 @@ export default function ActionButton({ kind, onClick, className }: { className?:
                 return <X size={16} className=" text-gray-600 cursor-pointer" />;
             case 'view':
                 return <Eye size={16} className=" text-gray-600 cursor-pointer" />;
+            case 'search':
+                return <Search size={16} className=" text-gray-600 cursor-pointer" />;
             default:
                 return null;
         }

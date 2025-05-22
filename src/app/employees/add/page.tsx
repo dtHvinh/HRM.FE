@@ -1,7 +1,7 @@
 'use client'
 
 import MainLayout from '@/components/layout/MainLayout';
-import { post } from '@/util/api';
+import { fetcher, post } from '@/util/api';
 import { countryCallingCodes } from '@/util/dataset';
 import { notifyError, notifySuccess } from '@/util/toast-util';
 import { Autocomplete, Button, Select, TextInput } from '@mantine/core';
@@ -17,23 +17,21 @@ export default function AddEmployeePage() {
     // Form state
     const [form, setForm] = useState({
         fullName: '',
-        email: '',
-        phone: '',
         dob: '',
         gender: '',
-        provinceId: '',
-        wardId: '',
+        email: '',
+        phone: '',
         departmentId: '',
         positionId: '',
+        provinceId: '',
+        wardId: '',
     });
 
-    // Fetch data for dropdowns
-    const { data: provinces } = useSWR('/api/provinces');
-    const { data: wards } = useSWR('/api/wards');
-    const { data: departments } = useSWR('/api/departments');
-    const { data: positions } = useSWR('/api/positions');
+    const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
+    const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
+    const { data: departments } = useSWR<{ departmentId: number; name: string }[]>('/api/departments', fetcher);
+    const { data: positions } = useSWR<{ positionId: number; name: string }[]>('/api/positions', fetcher);
 
-    // Transform data for select components
     const provinceOptions = provinces?.map((p: any) => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
     const wardOptions = wards?.map((w: any) => ({ value: w.wardId.toString(), label: w.wardName })) || [];
     const departmentOptions = departments?.map((d: any) => ({ value: d.departmentId.toString(), label: d.name })) || [];
@@ -41,8 +39,8 @@ export default function AddEmployeePage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        console.log(form);
 
-        // Validate form
         if (!form.fullName || !form.email || !form.phone || !form.dob || !form.gender ||
             !form.provinceId || !form.wardId || !form.departmentId || !form.positionId) {
             notifyError('Vui lòng điền đầy đủ thông tin');
@@ -52,7 +50,7 @@ export default function AddEmployeePage() {
         setIsSubmitting(true);
 
         try {
-            const response = await post('/api/employees', JSON.stringify(form));
+            const _ = await post('/api/employees', JSON.stringify(form));
             notifySuccess('Thêm nhân viên thành công');
             router.push('/');
         } catch (error) {
@@ -93,8 +91,8 @@ export default function AddEmployeePage() {
                             label="Giới Tính"
                             placeholder="Chọn giới tính"
                             data={[
-                                { value: 'Nam', label: 'Nam' },
-                                { value: 'Nữ', label: 'Nữ' },
+                                { value: 'Male', label: 'Nam' },
+                                { value: 'Female', label: 'Nữ' },
                             ]}
                             value={form.gender}
                             onChange={(value) => setForm({ ...form, gender: value || '' })}
@@ -110,18 +108,26 @@ export default function AddEmployeePage() {
                             required
                         />
 
-                        <Autocomplete
-                            label="Số Điện Thoại"
-                            placeholder="Nhập số điện thoại"
-                            data={countryCallingCodes}
-                            value={form.phone}
-                            onChange={(value) => setForm({ ...form, phone: value })}
-                            required
-                        />
+                        <div className='col-span-2 grid grid-cols-2 gap-6'>
+                            <div className='grid-cols-1'>
+                                <Autocomplete
+                                    label="Số Điện Thoại"
+                                    placeholder="Nhập số điện thoại"
+                                    data={countryCallingCodes}
+                                    value={form.phone}
+                                    onChange={(value) => setForm({ ...form, phone: value })}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+
+                            </div>
+                        </div>
 
                         <Select
-                            label="Tỉnh/Thành Phố"
-                            placeholder="Chọn tỉnh/thành phố"
+                            label="Tỉnh"
+                            placeholder="Tỉnh"
                             data={provinceOptions}
                             value={form.provinceId}
                             onChange={(value) => setForm({ ...form, provinceId: value || '' })}
@@ -130,8 +136,8 @@ export default function AddEmployeePage() {
                         />
 
                         <Select
-                            label="Quận/Huyện"
-                            placeholder="Chọn quận/huyện"
+                            label="Thành phố/Huyện"
+                            placeholder="Thành phố/Huyện"
                             data={wardOptions}
                             value={form.wardId}
                             onChange={(value) => setForm({ ...form, wardId: value || '' })}

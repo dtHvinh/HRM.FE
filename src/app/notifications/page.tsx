@@ -11,43 +11,28 @@ import { useState } from 'react';
 const notificationsData = [
     {
         notificationId: 1,
-        content: 'Tăng lương cho bộ phận Kỹ thuật đã được xử lý.',
-        notificationDate: '2023-06-15T09:30:00',
+        content: 'Tăng lương đã được xử lý.',
+        notificationDate: '2025-06-15T09:30:00',
     },
     {
         notificationId: 2,
         content: 'Sarah Johnson đã gia nhập bộ phận Marketing.',
-        notificationDate: '2023-06-14T14:15:00',
+        notificationDate: '2025-06-14T14:15:00',
     },
     {
         notificationId: 3,
         content: 'Cuộc họp hàng tháng của bộ phận Nhân sự đã được lên lịch.',
-        notificationDate: '2023-06-10T10:00:00',
+        notificationDate: '2025-06-10T10:00:00',
     },
     {
         notificationId: 4,
-        content: 'Tăng lương cho bộ phận Kinh doanh đã được xử lý.',
-        notificationDate: '2023-03-15T11:30:00',
+        content: 'Tăng lương đã được xử lý.',
+        notificationDate: '2025-03-15T11:30:00',
     },
     {
         notificationId: 5,
         content: 'Chính sách làm việc từ xa đã được cập nhật. Vui lòng xem xét các thay đổi.',
-        notificationDate: '2023-03-10T15:45:00',
-    },
-    {
-        notificationId: 6,
-        content: 'Tăng lương cho bộ phận Marketing đã được xử lý.',
-        notificationDate: '2022-12-15T10:15:00',
-    },
-    {
-        notificationId: 7,
-        content: 'Văn phòng sẽ đóng cửa vào ngày 25 và 26 tháng 12 cho kỳ nghỉ lễ Giáng sinh.',
-        notificationDate: '2022-12-01T09:00:00',
-    },
-    {
-        notificationId: 8,
-        content: 'Tăng lương cho bộ phận Kỹ thuật đã được xử lý.',
-        notificationDate: '2022-09-15T14:30:00',
+        notificationDate: '2025-03-10T15:45:00',
     },
 ];
 
@@ -182,7 +167,6 @@ export default function NotificationsPage() {
                         <TextInput
                             label="Nội dung"
                             placeholder="Nhập nội dung thông báo"
-                            description="Mô tả chi tiết thông báo"
                             {...form.getInputProps('content')}
                             required
                         />
@@ -190,7 +174,6 @@ export default function NotificationsPage() {
                         <DateTimePicker
                             label="Ngày và Giờ"
                             placeholder="Chọn ngày và giờ"
-                            description="Khi nào thông báo này được ghi ngày"
                             {...form.getInputProps('notificationDate')}
                             required
                         />

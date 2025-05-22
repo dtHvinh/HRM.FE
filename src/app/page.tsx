@@ -2,12 +2,13 @@
 
 import ActionButton from '@/components/button/ActionButton';
 import MainLayout from '@/components/layout/MainLayout';
+import SearchModal from '@/components/modal/SearchModal';
 import TransferModal from '@/components/modal/TransferModal';
 import { fetcher, put } from '@/util/api';
 import { countryCallingCodes } from '@/util/dataset';
-import { Autocomplete, Select, TextInput } from '@mantine/core';
+import { Autocomplete, Select, TextInput, Tooltip } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
-import { Plus, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import useSWR, { mutate } from 'swr';
@@ -40,11 +41,15 @@ export default function EmployeesPage() {
     const [genderFilter, setGenderFilter] = useState<string | null>(null);
     const [provinceFilter, setProvinceFilter] = useState<string | null>(null);
     const [wardFilter, setWardFilter] = useState<string | null>(null);
+    const [nameFilter, setNameFilter] = useState<string>('');
+    const [searchModalOpen, setSearchModalOpen] = useState(false);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
 
     const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
     const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
     const { data: employees } = useSWR<GetEmployeeDTO[]>(
-        `/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}`, fetcher);
+        `/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}&name=${nameFilter}&page=${page}&pageSize=${pageSize}`, fetcher);
     const { data: departments, error: departmentsError, isLoading: departmentsLoading } = useSWR<{ departmentId: number, name: string }[]>('/api/departments', fetcher);
     const departmentOptions = departments?.map(d => ({ value: d.departmentId.toString(), label: d.name })) || [];
     const provinceOptions = provinces?.map(p => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
@@ -101,10 +106,15 @@ export default function EmployeesPage() {
                     <h1 className="text-2xl font-bold">Nhân Viên</h1>
                     <p className="text-gray-700">Quản lý nhân viên của bạn</p>
                 </div>
-                <Link href="/employees/add" className="p-2 px-3 transition-colors rounded-lg inline-flex items-center gap-2 hover:bg-gray-200">
-                    <Plus size={16} className="cursor-pointer" />
-                    Thêm
-                </Link>
+                <div className='flex gap-5'>
+                    <div className='flex items-center'>
+                        <ActionButton kind='search' onClick={() => setSearchModalOpen(true)} />
+                    </div>
+                    <ActionButton
+                        kind="add"
+                        onClick={() => window.location.href = '/employees/add'}
+                    />
+                </div>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
@@ -254,7 +264,7 @@ export default function EmployeesPage() {
                                             employee.ward
                                         )}
                                     </td>
-                                    <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
+                                    <td className="py-4 px-4 text-sm text-gray-700">
                                         {editingEmployeeId === employee.employeeId ? (
                                             <TextInput
                                                 description={employee.email}
@@ -263,7 +273,9 @@ export default function EmployeesPage() {
                                                 size="xs"
                                             />
                                         ) : (
-                                            employee.email
+                                            <Tooltip label={employee.email}>
+                                                <div className='max-w-10 truncate'>{employee.email}</div>
+                                            </Tooltip>
                                         )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
@@ -280,10 +292,14 @@ export default function EmployeesPage() {
                                         )}
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {employee.department}
+                                        <Tooltip label={employee.department} >
+                                            <div className='max-w-32 truncate'>{employee.department}</div>
+                                        </Tooltip>
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
-                                        {employee.position}
+                                        <Tooltip label={employee.position} >
+                                            <div className='max-w-24 truncate'>{employee.position}</div>
+                                        </Tooltip>
                                     </td>
                                     <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
                                         <div className="flex items-center gap-2">
@@ -324,6 +340,14 @@ export default function EmployeesPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Search Modal */}
+            <SearchModal
+                isOpen={searchModalOpen}
+                onClose={() => setSearchModalOpen(false)}
+                value={nameFilter}
+                onChange={setNameFilter}
+            />
 
             {/* Transfer Modal */}
             {selectedEmployee && (

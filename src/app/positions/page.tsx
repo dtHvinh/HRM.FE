@@ -123,7 +123,10 @@ export default function PositionsPage() {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <ActionButton kind="edit" onClick={() => setEditingPositionId(position.positionId)} />
+                                                    <ActionButton kind="edit" onClick={() => {
+                                                        setEditingPositionId(position.positionId)
+                                                        setEditPositionName(position.name)
+                                                    }} />
                                                     <ActionButton kind="delete" onClick={() => handleAskDeletePosition(position.name, position.positionId)} />
                                                 </>
                                             )}
