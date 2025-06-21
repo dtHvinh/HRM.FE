@@ -1,9 +1,10 @@
 'use client'
 
 import MainLayout from '@/components/layout/MainLayout';
-import { fetcher, post, put } from '@/util/api';
+import { del, fetcher, post, put } from '@/util/api';
 import { notifyError } from '@/util/toast-util';
-import { PasswordInput, TextInput } from '@mantine/core';
+import { PasswordInput, Text, TextInput } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import { Check, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import useSWR from 'swr';
@@ -22,7 +23,6 @@ type AccountFormData = {
 export default function AccountsPage() {
     const { data: accounts, error, mutate } = useSWR<Account[]>('/api/accounts', fetcher);
 
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
     const [isAddingNew, setIsAddingNew] = useState(false);
     const [editingAccountId, setEditingAccountId] = useState<number | null>(null);
@@ -112,19 +112,29 @@ export default function AccountsPage() {
         });
     };
 
-    const handleDeleteAccount = async () => {
-        if (!selectedAccount) return;
-
-        const filteredAccounts = accounts?.filter(account => account.accountId !== selectedAccount.accountId);
-        mutate(filteredAccounts, false);
-
-        setSelectedAccount(null);
-        setShowDeleteModal(false);
+    const handleDeleteAccount = async (accountId: number) => {
+        try {
+            await del(`/api/accounts/${accountId}`)
+            mutate();
+        }
+        catch {
+            notifyError('Xóa tài khoản thất bại')
+        }
     };
 
-    const openDeleteModal = (account: Account) => {
-        setSelectedAccount(account);
-        setShowDeleteModal(true);
+    const handleAskDeleteAccount = (account: Account) => {
+        modals.openConfirmModal({
+            title: 'Cảnh báo',
+            centered: true,
+            children: (
+                <Text size='sm'>
+                    Bạn có chắc chắn muốn xóa tài khoản '{account.username}' này?
+                </Text>
+            ),
+            labels: { confirm: `Xóa`, cancel: "Không, đừng xóa" },
+            confirmProps: { color: 'red' },
+            onConfirm: async () => await handleDeleteAccount(account.accountId),
+        });
     };
 
     return (
@@ -220,7 +230,7 @@ export default function AccountsPage() {
                                                         Sửa
                                                     </button>
                                                     <button
-                                                        onClick={() => openDeleteModal(account)}
+                                                        onClick={() => handleAskDeleteAccount(account)}
                                                         className="text-red-600 hover:text-red-900"
                                                         disabled={isAddingNew || editingAccountId !== null}
                                                     >
@@ -277,31 +287,6 @@ export default function AccountsPage() {
                     </div>
                 </div>
             )}
-
-            {/* Delete Account Modal */}
-            <div className="modal">
-                {showDeleteModal && (
-                    <div className="modal-content">
-                        <div className="p-2">
-                            <p className="mb-4">Bạn có chắc chắn muốn xóa tài khoản <strong>{selectedAccount?.username}</strong>? Hành động này không thể hoàn tác.</p>
-                            <div className="flex justify-end gap-3 mt-6">
-                                <button
-                                    onClick={() => setShowDeleteModal(false)}
-                                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                                >
-                                    Hủy
-                                </button>
-                                <button
-                                    onClick={handleDeleteAccount}
-                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                                >
-                                    Xóa
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
         </MainLayout>
     );
 }

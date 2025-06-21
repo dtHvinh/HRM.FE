@@ -34,7 +34,7 @@ export default function LocationPage() {
             setNewProvinceName('');
             setIsAddingProvince(false);
         } catch (error) {
-            notifyError('Không thể thêm tỉnh/thành phố');
+            notifyError('Không thể thêm');
         }
     };
 
@@ -45,7 +45,7 @@ export default function LocationPage() {
             setEditingProvinceId(null);
             setEditProvinceName('');
         } catch (error) {
-            notifyError('Không thể chỉnh sửa tỉnh/thành phố');
+            notifyError('Không thể chỉnh sửa');
         }
     };
 
@@ -69,7 +69,7 @@ export default function LocationPage() {
             await del(`/api/provinces/${id}`);
             mutate('/api/provinces');
         } catch (error) {
-            notifyError('Không thể xóa tỉnh/thành phố');
+            notifyError('Không thể xóa');
         }
     };
 
@@ -81,7 +81,7 @@ export default function LocationPage() {
             setNewWardName('');
             setIsAddingWard(false);
         } catch (error) {
-            notifyError('Không thể thêm phường/xã');
+            notifyError('Không thể thêm');
         }
     };
 
@@ -92,7 +92,7 @@ export default function LocationPage() {
             setEditingWardId(null);
             setEditWardName('');
         } catch (error) {
-            notifyError('Không thể chỉnh sửa phường/xã');
+            notifyError('Không thể chỉnh sửa');
         }
     };
 
@@ -116,7 +116,7 @@ export default function LocationPage() {
             await del(`/api/wards/${id}`);
             mutate('/api/wards');
         } catch (error) {
-            notifyError('Không thể xóa phường/xã');
+            notifyError('Không thể xóa');
         }
     };
 

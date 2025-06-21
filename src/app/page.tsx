@@ -2,18 +2,21 @@
 
 import ActionButton from '@/components/button/ActionButton';
 import MainLayout from '@/components/layout/MainLayout';
+import ReportModal from '@/components/modal/ReportModal';
 import SearchModal from '@/components/modal/SearchModal';
 import TransferModal from '@/components/modal/TransferModal';
 import { fetcher, put } from '@/util/api';
 import { countryCallingCodes } from '@/util/dataset';
+import { notifyError } from '@/util/toast-util';
 import { Autocomplete, Select, TextInput, Tooltip } from '@mantine/core';
 import { DateInput } from '@mantine/dates';
 import { RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import useSWR, { mutate } from 'swr';
+import useSWR from 'swr';
+import { useDebounce } from 'use-debounce';
 
-interface GetEmployeeDTO {
+export interface GetEmployeeDTO {
     employeeId: number;
     fullName: string;
     dob: string;
@@ -41,15 +44,17 @@ export default function EmployeesPage() {
     const [genderFilter, setGenderFilter] = useState<string | null>(null);
     const [provinceFilter, setProvinceFilter] = useState<string | null>(null);
     const [wardFilter, setWardFilter] = useState<string | null>(null);
-    const [nameFilter, setNameFilter] = useState<string>('');
     const [searchModalOpen, setSearchModalOpen] = useState(false);
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(100);
+
+    const [nameFilter, setNameFilter] = useState<string>('');
+    const [debounceNameFilter] = useDebounce(nameFilter, 500);
 
     const { data: provinces } = useSWR<{ provinceId: number; provinceName: string }[]>('/api/provinces', fetcher);
     const { data: wards } = useSWR<{ wardId: number; wardName: string }[]>('/api/wards', fetcher);
-    const { data: employees } = useSWR<GetEmployeeDTO[]>(
-        `/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}&name=${nameFilter}&page=${page}&pageSize=${pageSize}`, fetcher);
+    const { data: employees, mutate } = useSWR<GetEmployeeDTO[]>(
+        `/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}&name=${debounceNameFilter}&page=${page}&pageSize=${pageSize}`, fetcher);
     const { data: departments, error: departmentsError, isLoading: departmentsLoading } = useSWR<{ departmentId: number, name: string }[]>('/api/departments', fetcher);
     const departmentOptions = departments?.map(d => ({ value: d.departmentId.toString(), label: d.name })) || [];
     const provinceOptions = provinces?.map(p => ({ value: p.provinceId.toString(), label: p.provinceName })) || [];
@@ -61,6 +66,10 @@ export default function EmployeesPage() {
     // Transfer modal state
     const [transferModalOpen, setTransferModalOpen] = useState(false);
     const [selectedEmployee, setSelectedEmployee] = useState<GetEmployeeDTO | null>(null);
+
+    // Report modal state
+    const [reportModalOpen, setReportModalOpen] = useState(false);
+    const [reportEmployeeId, setReportEmployeeId] = useState<number>(0);
 
     const startEditing = (employee: GetEmployeeDTO) => {
         setEditingEmployeeId(employee.employeeId);
@@ -78,11 +87,11 @@ export default function EmployeesPage() {
     const handleSaveEdit = async (employeeId: number) => {
         try {
             await put(`/api/employees/${employeeId}`, JSON.stringify(editForm));
-            await mutate(`/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}`);
+            await mutate();
             setEditingEmployeeId(null);
             setEditForm(defaultForm);
         } catch (error) {
-            console.error('Lỗi khi cập nhật nhân viên:', error);
+            notifyError('Lỗi khi cập nhật nhân viên:');
         }
     };
 
@@ -107,7 +116,7 @@ export default function EmployeesPage() {
                     <p className="text-gray-700">Quản lý nhân viên của bạn</p>
                 </div>
                 <div className='flex gap-5'>
-                    <div className='flex items-center'>
+                    <div className='flex items-center gap-2'>
                         <ActionButton kind='search' onClick={() => setSearchModalOpen(true)} />
                     </div>
                     <ActionButton
@@ -332,6 +341,13 @@ export default function EmployeesPage() {
                                                     </button>
                                                 </>
                                             )}
+
+                                            <ActionButton
+                                                kind="print"
+                                                onClick={() => {
+                                                    setReportEmployeeId(employee.employeeId);
+                                                    setReportModalOpen(true);
+                                                }} />
                                         </div>
                                     </td>
                                 </tr>
@@ -363,6 +379,16 @@ export default function EmployeesPage() {
                     currentPosition={selectedEmployee.position}
                 />
             )}
+
+            {/* Report Modal */}
+            <ReportModal
+                employeeId={reportEmployeeId}
+                isOpen={reportModalOpen}
+                onClose={() => {
+                    setReportModalOpen(false);
+                    setReportEmployeeId(0);
+                }}
+            />
         </MainLayout>
     );
 }

@@ -44,14 +44,14 @@ interface SalaryManagementProps {
 }
 
 export default function SalaryManagement({ employeeId }: SalaryManagementProps) {
-    const { data: salaries, error: salaryError, isLoading: salaryLoading } = useSWR<GetSalaryDTO[]>(
+    const { data: salaries, error: salaryError, isLoading: salaryLoading, mutate: salaryMutate } = useSWR<GetSalaryDTO[]>(
         `/api/salaries/${employeeId}/`,
         fetcher
     );
 
-    const { data: benefits, error: benefitError, isLoading: benefitLoading } = useSWR<GetEmployeeBenefitDTO[]>(
+    const { data: benefits, error: benefitError, isLoading: benefitLoading, mutate: benefitMutate } = useSWR<GetEmployeeBenefitDTO[]>(
         `/api/benefits/employee/${employeeId}`,
-        fetcher
+        fetcher,
     );
 
     const { data: allowances } = useSWR<Allowance[]>('/api/allowances', fetcher);
@@ -92,7 +92,7 @@ export default function SalaryManagement({ employeeId }: SalaryManagementProps) 
                 paymentDate: new Date().toISOString(),
             });
             setIsAdding(false);
-            await mutate(`/api/salaries/${employeeId}/`);
+            await salaryMutate();
             notifySuccess('Thêm thông tin lương thành công');
         } catch (error) {
             notifyError('Không thể thêm thông tin lương');
@@ -122,7 +122,7 @@ export default function SalaryManagement({ employeeId }: SalaryManagementProps) 
                 insuranceId: ''
             });
             close();
-            await mutate(`/api/employee-benefits/employee/${employeeId}`);
+            await benefitMutate();
             notifySuccess('Thêm phúc lợi thành công');
         } catch (error) {
             notifyError('Không thể thêm phúc lợi');

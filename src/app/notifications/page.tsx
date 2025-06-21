@@ -1,44 +1,25 @@
 'use client'
 
 import MainLayout from '@/components/layout/MainLayout';
-import { Button, Modal, TextInput } from '@mantine/core';
-import { DateTimePicker } from '@mantine/dates';
+import { fetcher, post } from '@/util/api';
+import { Button, Modal, Select, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { Plus } from 'lucide-react';
-import { useState } from 'react';
-
-const notificationsData = [
-    {
-        notificationId: 1,
-        content: 'Tăng lương đã được xử lý.',
-        notificationDate: '2025-06-15T09:30:00',
-    },
-    {
-        notificationId: 2,
-        content: 'Sarah Johnson đã gia nhập bộ phận Marketing.',
-        notificationDate: '2025-06-14T14:15:00',
-    },
-    {
-        notificationId: 3,
-        content: 'Cuộc họp hàng tháng của bộ phận Nhân sự đã được lên lịch.',
-        notificationDate: '2025-06-10T10:00:00',
-    },
-    {
-        notificationId: 4,
-        content: 'Tăng lương đã được xử lý.',
-        notificationDate: '2025-03-15T11:30:00',
-    },
-    {
-        notificationId: 5,
-        content: 'Chính sách làm việc từ xa đã được cập nhật. Vui lòng xem xét các thay đổi.',
-        notificationDate: '2025-03-10T15:45:00',
-    },
-];
+import useSWR from 'swr';
+import { GetEmployeeDTO } from '../page';
 
 export default function NotificationsPage() {
-    const [notifications, setNotifications] = useState(notificationsData);
-    // const { data: notifications, mutate } = useSWR<{ notificationId: number, content: string, notificationDate: string }[]>('/api/notifications', fetcher);
+    const { data: notifications = [], mutate } = useSWR<{
+        notificationId: number,
+        content: string,
+        notificationDate: string,
+        employeeName: string
+    }[]>('/api/notifications', fetcher);
+
+    const { data: employees } = useSWR<GetEmployeeDTO[]>(
+        `/api/employees`, fetcher);
+    const employeeOptions = employees?.map((e) => ({ value: e.employeeId.toString(), label: e.fullName })) || [];
 
     // Modal state
     const [opened, { open, close }] = useDisclosure(false);
@@ -67,7 +48,7 @@ export default function NotificationsPage() {
         }).format(date);
     };
 
-    const groupNotificationsByDate = (notifications: { notificationId: number, content: string, notificationDate: string }[]) => {
+    const groupNotificationsByDate = (notifications: { notificationId: number, content: string, notificationDate: string, employeeName: string }[]) => {
         const groups: Record<string, typeof notifications> = {};
 
         notifications.forEach(notification => {
@@ -134,7 +115,13 @@ export default function NotificationsPage() {
                                             <div className="flex items-center justify-between mb-1">
                                                 <span className="text-xs text-gray-500">{formatDate(notification.notificationDate)}</span>
                                             </div>
-                                            <p className="text-sm text-gray-600">{notification.content}</p>
+                                            <div>
+                                                <p className="text-sm text-gray-600">{notification.content}</p>
+
+                                                <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                                                    <span>Người nhận: {notification.employeeName}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -146,20 +133,9 @@ export default function NotificationsPage() {
 
             {/* Add Notification Modal */}
             <Modal opened={opened} onClose={close} title="Thêm Thông Báo Mới" centered>
-                <form onSubmit={form.onSubmit((values) => {
-                    // In a real app, this would be an API call
-                    // await post('/api/notifications', JSON.stringify(values));
-
-                    // For demo purposes, we'll just add to the local state
-                    const newNotification = {
-                        notificationId: Math.max(0, ...notifications.map(n => n.notificationId)) + 1,
-                        content: values.content,
-                        notificationDate: values.notificationDate.toISOString(),
-                    };
-
-                    setNotifications([newNotification, ...notifications]);
-                    // In a real app with SWR: mutate();
-
+                <form onSubmit={form.onSubmit(async (values) => {
+                    await post('/api/notifications', JSON.stringify(values));
+                    mutate()
                     form.reset();
                     close();
                 })}>
@@ -171,10 +147,12 @@ export default function NotificationsPage() {
                             required
                         />
 
-                        <DateTimePicker
-                            label="Ngày và Giờ"
-                            placeholder="Chọn ngày và giờ"
-                            {...form.getInputProps('notificationDate')}
+                        <Select
+                            label="Người nhận"
+                            placeholder="Chọn người nhận"
+                            data={employeeOptions}
+                            {...form.getInputProps('employeeId')}
+                            searchable
                             required
                         />
 
