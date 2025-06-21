@@ -63,14 +63,9 @@ export default function EmployeesPage() {
     `/api/employees?dep=${departmentFilter}&gen=${genderFilter}&province=${provinceFilter}&ward=${wardFilter}&name=${debounceNameFilter}&page=${page}&pageSize=${pageSize}`,
     fetcher
   );
-  const {
-    data: departments,
-    error: departmentsError,
-    isLoading: departmentsLoading,
-  } = useSWR<{ departmentId: number; name: string }[]>(
-    "/api/departments",
-    fetcher
-  );
+  const { data: departments } = useSWR<
+    { departmentId: number; name: string }[]
+  >("/api/departments", fetcher);
   const departmentOptions =
     departments?.map((d) => ({
       value: d.departmentId.toString(),
@@ -442,9 +437,9 @@ export default function EmployeesPage() {
                     {editingEmployeeId === employee.employeeId ? (
                       <Select
                         description={employee.province}
-                        onChange={(value) =>
-                          setEditForm({ ...editForm, provinceId: value || "" })
-                        }
+                        onChange={(value) => {
+                          setEditForm({ ...editForm, provinceId: value || "" });
+                        }}
                         data={provinceOptions}
                         size="xs"
                         searchable
