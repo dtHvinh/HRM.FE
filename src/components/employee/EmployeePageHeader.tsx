@@ -1,6 +1,7 @@
 "use client";
 
 import ActionButton from "@/components/button/ActionButton";
+import { useRoleBasedAccess } from "@/hooks/useRoleBasedAccess";
 
 interface EmployeePageHeaderProps {
   onSearch: () => void;
@@ -13,6 +14,8 @@ export default function EmployeePageHeader({
   onPrintAll,
   onAdd,
 }: EmployeePageHeaderProps) {
+  const { canEdit } = useRoleBasedAccess();
+
   return (
     <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
@@ -24,7 +27,7 @@ export default function EmployeePageHeader({
           <ActionButton kind="search" onClick={onSearch} />
           <ActionButton kind="print" onClick={onPrintAll} />
         </div>
-        <ActionButton kind="add" onClick={onAdd} />
+        {canEdit() && <ActionButton kind="add" onClick={onAdd} />}
       </div>
     </div>
   );

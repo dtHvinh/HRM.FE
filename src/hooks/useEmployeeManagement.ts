@@ -89,10 +89,70 @@ export const useEmployeeManagement = () => {
     });
   };
 
+  // Form validation function
+  const validateForm = (form: typeof editForm) => {
+    const errors: string[] = [];
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email.trim()) {
+      errors.push("Yêu cầu nhập email");
+    } else if (!emailRegex.test(form.email)) {
+      errors.push("Email không hợp lệ");
+    }
+
+    // Validate phone number
+    const phoneRegex = /^\d+$/; // Only digits
+    if (!form.phone.trim()) {
+      errors.push("Số điện thoại là bắt buộc");
+    } else if (!phoneRegex.test(form.phone)) {
+      errors.push("Số điện thoại chỉ được chứa số");
+    } else if (form.phone.length < 10) {
+      errors.push("Số điện thoại phải có ít nhất 10 chữ số");
+    }
+
+    // Validate age (must be 18 or older)
+    if (form.dob) {
+      const today = new Date();
+      const birthDate = new Date(form.dob);
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      // Adjust age if birthday hasn't occurred this year
+      const actualAge =
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ? age - 1
+          : age;
+
+      if (actualAge < 18) {
+        errors.push("Nhân viên phải từ 18 tuổi trở lên");
+      }
+    } else {
+      errors.push("Ngày sinh là bắt buộc");
+    }
+
+    // Validate full name
+    if (!form.fullName.trim()) {
+      errors.push("Họ tên là bắt buộc");
+    }
+
+    return errors;
+  };
+
   const handleSaveEdit = async (employeeId: number) => {
     try {
       console.log("Attempting to save employee:", employeeId);
       console.log("Form data being sent:", editForm);
+
+      // Validate form before sending
+      const validationErrors = validateForm(editForm);
+      console.log(validationErrors);
+      if (validationErrors.length > 0) {
+        // Show all validation errors
+        validationErrors.forEach((error) => notifyError(error));
+        return;
+      }
 
       const response = await put(
         `/api/employees/${employeeId}`,
@@ -172,14 +232,15 @@ export const useEmployeeManagement = () => {
     setTransferModalOpen,
     setReportModalOpen,
     setSelectedEmployee,
-    setReportEmployeeId,
-
-    // Handlers
+    setReportEmployeeId, // Handlers
     startEditing,
     handleSaveEdit,
     handleCancelEdit,
     handleFormChange,
     handleTransfer,
     handlePrint,
+
+    // Validation
+    validateForm,
   };
 };

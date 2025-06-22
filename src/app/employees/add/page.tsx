@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteGuard } from "@/components/auth/RouteGuard";
 import MainLayout from "@/components/layout/MainLayout";
 import { fetcher, post } from "@/util/api";
 import { notifyError, notifySuccess } from "@/util/toast-util";
@@ -78,7 +79,6 @@ export default function AddEmployeePage() {
 
     return actualAge >= 18;
   };
-
   const validatePhoneNumber = (phone: string): boolean => {
     if (!phone || phone.trim() === "") return false;
 
@@ -87,6 +87,13 @@ export default function AddEmployeePage() {
 
     // Check if the cleaned phone contains only digits
     return /^\d+$/.test(cleanPhone) && cleanPhone.length >= 10;
+  };
+
+  const validateEmail = (email: string): boolean => {
+    if (!email || email.trim() === "") return false;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,11 +114,15 @@ export default function AddEmployeePage() {
     ) {
       notifyError("Vui lòng điền đầy đủ thông tin");
       return;
-    }
-
-    // Age validation
+    } // Age validation
     if (!validateAge(form.dob)) {
       notifyError("Nhân viên phải từ 18 tuổi trở lên");
+      return;
+    }
+
+    // Email validation
+    if (!validateEmail(form.email)) {
+      notifyError("Email không hợp lệ. Vui lòng nhập đúng định dạng email");
       return;
     }
 
@@ -136,134 +147,137 @@ export default function AddEmployeePage() {
       setIsSubmitting(false);
     }
   };
-
   return (
-    <MainLayout activePath="/">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">Thêm Nhân Viên Mới</h1>
-        <p className="text-gray-700">Điền thông tin để thêm nhân viên mới</p>
-      </div>
+    <RouteGuard requiredRole="user">
+      <MainLayout activePath="/">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">Thêm Nhân Viên Mới</h1>
+          <p className="text-gray-700">Điền thông tin để thêm nhân viên mới</p>
+        </div>
 
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <TextInput
-              label="Họ và Tên"
-              placeholder="Nhập họ và tên đầy đủ"
-              value={form.fullName}
-              onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              required
-            />{" "}
-            <DateInput
-              label="Ngày Sinh"
-              placeholder="Chọn ngày sinh"
-              value={form.dob ? new Date(form.dob) : null}
-              onChange={(date) =>
-                setForm({ ...form, dob: date ? date.toString() : "" })
-              }
-              error={
-                form.dob && !validateAge(form.dob)
-                  ? "Nhân viên phải từ 18 tuổi trở lên"
-                  : undefined
-              }
-              maxDate={new Date()}
-              required
-            />
-            <Select
-              label="Giới Tính"
-              placeholder="Chọn giới tính"
-              data={[
-                { value: "Male", label: "Nam" },
-                { value: "Female", label: "Nữ" },
-              ]}
-              value={form.gender}
-              onChange={(value) => setForm({ ...form, gender: value || "" })}
-              required
-            />
-            <TextInput
-              label="Email"
-              placeholder="Nhập địa chỉ email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              required
-            />{" "}
-            <div className="col-span-2 grid grid-cols-2 gap-6">
-              <div className="grid-cols-1">
-                <TextInput
-                  label="Số Điện Thoại"
-                  placeholder="Nhập số điện thoại"
-                  value={form.phone}
-                  onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  error={
-                    form.phone && !validatePhoneNumber(form.phone)
-                      ? "Số điện thoại chỉ được chứa các chữ số và có ít nhất 10 số"
-                      : undefined
-                  }
-                  required
-                />
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <TextInput
+                label="Họ và Tên"
+                placeholder="Nhập họ và tên đầy đủ"
+                value={form.fullName}
+                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
+                required
+              />{" "}
+              <DateInput
+                label="Ngày Sinh"
+                placeholder="Chọn ngày sinh"
+                value={form.dob ? new Date(form.dob) : null}
+                onChange={(date) =>
+                  setForm({ ...form, dob: date ? date.toString() : "" })
+                }
+                error={
+                  form.dob && !validateAge(form.dob)
+                    ? "Nhân viên phải từ 18 tuổi trở lên"
+                    : undefined
+                }
+                maxDate={new Date()}
+                required
+              />
+              <Select
+                label="Giới Tính"
+                placeholder="Chọn giới tính"
+                data={[
+                  { value: "Male", label: "Nam" },
+                  { value: "Female", label: "Nữ" },
+                ]}
+                value={form.gender}
+                onChange={(value) => setForm({ ...form, gender: value || "" })}
+                required
+              />
+              <TextInput
+                label="Email"
+                placeholder="Nhập địa chỉ email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                required
+              />{" "}
+              <div className="col-span-2 grid grid-cols-2 gap-6">
+                <div className="grid-cols-1">
+                  <TextInput
+                    label="Số Điện Thoại"
+                    placeholder="Nhập số điện thoại"
+                    value={form.phone}
+                    onChange={(e) =>
+                      setForm({ ...form, phone: e.target.value })
+                    }
+                    error={
+                      form.phone && !validatePhoneNumber(form.phone)
+                        ? "Số điện thoại chỉ được chứa các chữ số và có ít nhất 10 số"
+                        : undefined
+                    }
+                    required
+                  />
+                </div>
+
+                <div></div>
               </div>
-
-              <div></div>
+              <Select
+                label="Tỉnh"
+                placeholder="Tỉnh"
+                data={provinceOptions}
+                value={form.provinceId}
+                onChange={(value) =>
+                  setForm({ ...form, provinceId: value || "" })
+                }
+                searchable
+                required
+              />
+              <Select
+                label="Thành phố/Huyện"
+                placeholder="Thành phố/Huyện"
+                data={wardOptions}
+                value={form.wardId}
+                onChange={(value) => setForm({ ...form, wardId: value || "" })}
+                searchable
+                required
+              />
+              <Select
+                label="Phòng Ban"
+                placeholder="Chọn phòng ban"
+                data={departmentOptions}
+                value={form.departmentId}
+                onChange={(value) =>
+                  setForm({ ...form, departmentId: value || "" })
+                }
+                searchable
+                required
+              />
+              <Select
+                label="Chức Vụ"
+                placeholder="Chọn chức vụ"
+                data={positionOptions}
+                value={form.positionId}
+                onChange={(value) =>
+                  setForm({ ...form, positionId: value || "" })
+                }
+                searchable
+                required
+              />
             </div>
-            <Select
-              label="Tỉnh"
-              placeholder="Tỉnh"
-              data={provinceOptions}
-              value={form.provinceId}
-              onChange={(value) =>
-                setForm({ ...form, provinceId: value || "" })
-              }
-              searchable
-              required
-            />
-            <Select
-              label="Thành phố/Huyện"
-              placeholder="Thành phố/Huyện"
-              data={wardOptions}
-              value={form.wardId}
-              onChange={(value) => setForm({ ...form, wardId: value || "" })}
-              searchable
-              required
-            />
-            <Select
-              label="Phòng Ban"
-              placeholder="Chọn phòng ban"
-              data={departmentOptions}
-              value={form.departmentId}
-              onChange={(value) =>
-                setForm({ ...form, departmentId: value || "" })
-              }
-              searchable
-              required
-            />
-            <Select
-              label="Chức Vụ"
-              placeholder="Chọn chức vụ"
-              data={positionOptions}
-              value={form.positionId}
-              onChange={(value) =>
-                setForm({ ...form, positionId: value || "" })
-              }
-              searchable
-              required
-            />
-          </div>
 
-          <div className="flex justify-end gap-4">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/")}
-              disabled={isSubmitting}
-            >
-              Hủy
-            </Button>
-            <Button type="submit" loading={isSubmitting}>
-              Thêm Nhân Viên
-            </Button>
-          </div>
-        </form>
-      </div>
-    </MainLayout>
+            <div className="flex justify-end gap-4">
+              <Button
+                variant="outline"
+                onClick={() => router.push("/")}
+                disabled={isSubmitting}
+              >
+                Hủy
+              </Button>
+              <Button type="submit" loading={isSubmitting}>
+                Thêm Nhân Viên
+              </Button>
+            </div>
+          </form>{" "}
+        </div>
+      </MainLayout>
+    </RouteGuard>
   );
 }

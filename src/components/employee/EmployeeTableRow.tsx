@@ -2,8 +2,8 @@
 
 import { GetEmployeeDTO } from "@/app/page";
 import ActionButton from "@/components/button/ActionButton";
-import { countryCallingCodes } from "@/util/dataset";
-import { Autocomplete, Select, TextInput, Tooltip } from "@mantine/core";
+import { useRoleBasedAccess } from "@/hooks/useRoleBasedAccess";
+import { Select, TextInput, Tooltip } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -43,6 +43,7 @@ export default function EmployeeTableRow({
   onPrint,
   onFormChange,
 }: EmployeeTableRowProps) {
+  const { canEdit } = useRoleBasedAccess();
   const isEditing = editingEmployeeId === employee.employeeId;
 
   return (
@@ -74,7 +75,6 @@ export default function EmployeeTableRow({
           </div>
         </div>
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         {isEditing ? (
           <DateInput
@@ -90,7 +90,6 @@ export default function EmployeeTableRow({
           new Date(employee.dob).toLocaleDateString()
         )}
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         {isEditing ? (
           <Select
@@ -98,8 +97,8 @@ export default function EmployeeTableRow({
             value={editForm.gender}
             onChange={(value) => onFormChange("gender", value || "")}
             data={[
-              { value: "Nam", label: "Nam" },
-              { value: "Nữ", label: "Nữ" },
+              { value: "Male", label: "M" },
+              { value: "Female", label: "F" },
             ]}
             size="xs"
           />
@@ -111,7 +110,6 @@ export default function EmployeeTableRow({
           employee.gender
         )}
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         {isEditing ? (
           <Select
@@ -125,7 +123,6 @@ export default function EmployeeTableRow({
           employee.province
         )}
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         {isEditing ? (
           <Select
@@ -139,7 +136,6 @@ export default function EmployeeTableRow({
           employee.ward
         )}
       </td>
-
       <td className="py-4 px-4 text-sm text-gray-700">
         {isEditing ? (
           <TextInput
@@ -154,36 +150,31 @@ export default function EmployeeTableRow({
           </Tooltip>
         )}
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         {isEditing ? (
-          <Autocomplete
+          <TextInput
             description={employee.phone}
-            data={countryCallingCodes}
             value={editForm.phone}
-            onChange={(value) => onFormChange("phone", value)}
+            onChange={(e) => onFormChange("phone", e.target.value)}
             size="xs"
           />
         ) : (
           employee.phone
         )}
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         <Tooltip label={employee.department}>
           <div className="max-w-32 truncate">{employee.department}</div>
         </Tooltip>
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         <Tooltip label={employee.position}>
           <div className="max-w-24 truncate">{employee.position}</div>
         </Tooltip>
       </td>
-
       <td className="py-4 px-4 whitespace-nowrap text-sm text-gray-700">
         <div className="flex items-center gap-2">
-          {isEditing ? (
+          {isEditing && canEdit() ? (
             <>
               <ActionButton
                 kind="check"
@@ -193,17 +184,24 @@ export default function EmployeeTableRow({
             </>
           ) : (
             <>
-              <ActionButton
-                kind="edit"
-                onClick={() => onStartEditing(employee)}
-              />
-              <button
-                className="p-2 rounded-full"
-                onClick={() => onTransfer(employee)}
-                title="Chuyển nhân viên"
-              >
-                <RefreshCw size={16} className="text-gray-600 cursor-pointer" />
-              </button>
+              {canEdit() && (
+                <>
+                  <ActionButton
+                    kind="edit"
+                    onClick={() => onStartEditing(employee)}
+                  />
+                  <button
+                    className="p-2 rounded-full"
+                    onClick={() => onTransfer(employee)}
+                    title="Chuyển nhân viên"
+                  >
+                    <RefreshCw
+                      size={16}
+                      className="text-gray-600 cursor-pointer"
+                    />
+                  </button>
+                </>
+              )}
             </>
           )}
 
