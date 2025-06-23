@@ -31,7 +31,11 @@ export const useRoleBasedAccess = () => {
 
     // Regular users can only access employee page
     if (isUser) {
-      return route === "/" || route === "/employees";
+      return (
+        route === "/" ||
+        route === "/employees/add" ||
+        route.startsWith("/employees/")
+      );
     }
 
     // Admin users can access everything

@@ -19,9 +19,9 @@ export default function LoginPage() {
     },
     validate: {
       username: (value) =>
-        value.length < 3 ? "Username must be at least 3 characters" : null,
+        value.length < 3 ? "Tên đăng nhập phải có ít nhất 3 ký tự" : null,
       password: (value) =>
-        value.length < 3 ? "Password must be at least 5 characters" : null,
+        value.length < 3 ? "Mật khẩu phải có ít nhất 5 ký tự" : null,
     },
   });
   const handleSubmit = async (values: typeof form.values) => {
@@ -37,7 +37,7 @@ export default function LoginPage() {
       setAuth(response.accessToken);
       router.push("/");
     } catch (err) {
-      setError("Invalid email or password");
+      setError("Tên đăng nhập hoặc mật khẩu không chính xác");
     } finally {
       setLoading(false);
     }
@@ -48,55 +48,47 @@ export default function LoginPage() {
     setAuth("anonymous");
     router.push("/");
   };
-
   return (
     <div className="max-w-[420px] mx-auto my-10">
       <h1 className="text-2xl font-bold text-center mb-6">
-        Welcome to HRM System
+        Chào Mừng Đến Với Hệ Thống HRM
       </h1>
 
       <p className="text-sm text-gray-500 text-center mb-8">
-        Sign in to access your account
+        Đăng nhập để truy cập tài khoản của bạn
       </p>
 
       <div className="bg-white border rounded-lg shadow-sm p-8 mt-8">
         {error && (
-          <Alert
-            color="red"
-            mb="md"
-            title="Authentication Error"
-            variant="light"
-          >
+          <Alert color="red" mb="md" title="Lỗi Xác Thực" variant="light">
             {error}
           </Alert>
-        )}
-
+        )}{" "}
         <form onSubmit={form.onSubmit(handleSubmit)}>
           <TextInput
-            label="Username"
+            label="Tên Đăng Nhập"
             required
             {...form.getInputProps("username")}
           />
           <PasswordInput
-            label="Password"
+            label="Mật Khẩu"
             required
             className="mt-4"
             {...form.getInputProps("password")}
           />{" "}
           <Button fullWidth className="mt-6" type="submit" loading={loading}>
-            Sign in
+            Đăng Nhập
           </Button>
-        </form>
-
+        </form>{" "}
         <div className="mt-4 text-center">
-          <p className="text-sm text-gray-500 mb-2">or</p>
+          <p className="text-sm text-gray-500 mb-2">hoặc</p>
           <Button
             fullWidth
             variant="outline"
             onClick={handleAnonymousLogin}
             disabled={loading}
           >
-            Continue as Anonymous
+            Tiếp Tục Với Tư Cách Khách
           </Button>
         </div>
       </div>

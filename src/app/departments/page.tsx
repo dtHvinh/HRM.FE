@@ -30,6 +30,10 @@ export default function DepartmentsPage() {
   const [editDepartmentName, setEditDepartmentName] = useState("");
 
   const handleAddDepartment = async () => {
+    if (/^[0-9]+$/.test(newDeptName.trim())) {
+      notifyError("Tên phòng ban không được là số");
+      return;
+    }
     if (!newDeptName.trim()) return;
     try {
       await post(

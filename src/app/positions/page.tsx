@@ -28,6 +28,10 @@ export default function PositionsPage() {
 
   const handleAddPosition = async () => {
     if (!newPositionName.trim()) return;
+    if (/^[0-9]+$/.test(newPositionName.trim())) {
+      notifyError("Tên chức vụ không được là số");
+      return;
+    }
     try {
       await post(
         "/api/positions",
